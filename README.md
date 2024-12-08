@@ -65,7 +65,7 @@ The **MyDFIR 30-day SOC Analyst Challenge** provided an intensive, hands-on expe
   ![My Image](https://github.com/hammer-and-anvil/30-Day-SOC-Analyst-Challenge/blob/main/assets/images/30DaySOC%20Screenshot%20Vultr%20FirewallGroupRules%20-edited.png)
 
 - **Journal**  
-  These are the original notes taken during the project. While spelling errors have been corrected, other inaccuracies, including procedural mistakes, have been retained along with their corresponding corrections. All VMs have since been destroyed and some security information has been removed or obfuscated.
+  These are the [original notes](https://github.com/hammer-and-anvil/30-Day-SOC-Analyst-Challenge/blob/main/assets/30Day%20MyDFIR%20SOC%20Analyst%20Challenge%20-log%20-REDACTED.txt) taken during the project. While spelling errors have been corrected, other inaccuracies, including procedural mistakes, have been retained along with their corresponding corrections. All VMs have since been destroyed and some security information has been removed or obfuscated.
 
   > *(Note: Before uploading the journal, I intentionally left the API keys intact, as I was confident that the Virtual Machines (VMs) associated with them had been destroyed. In fact, all services in Vultr were wiped clean. However, I received an email notification from GitHub stating, "GitGuardian has detected the following X-API-Key secret exposed within your GitHub account." I appreciate GitHub's strong security measures and proactive approach to protecting the community. As a result, I have now removed the exposed API keys as a security best practice. Lesson learned—thank you, GitHub!)*
 
