@@ -80,5 +80,5 @@ The **MyDFIR 30-day SOC Analyst Challenge** provided an intensive, hands-on expe
 ---
 
 ### Takeaways:
-The **MyDFIR 30-day SOC Analyst Challenge** significantly enhanced my practical skills in incident response, log analysis, and threat detection. I gained hands-on experience using industry-standard tools like Elastic Stack, Sysmon, and osTicket, and deepened my understanding of SOC operations. The challenge equipped me with valuable skills in both defensive and offensive cybersecurity, making me better prepared for a role as a SOC analyst or in any cybersecurity operations capacity.
+The **MyDFIR 30-day SOC Analyst Challenge** was a great way to boost my skills in incident response, log analysis, and threat detection. It gave me hands-on experience with tools like Elastic Stack, Sysmon, and osTicket, and helped me gain a deeper understanding of how SOCs operate. The challenge not only strengthened my defensive cybersecurity skills but also gave me insight into offensive techniques, preparing me for a SOC analyst role or any position in cybersecurity operations.
 
